@@ -1,10 +1,10 @@
 use super::traits::*;
 use super::enums::*;
-use super::notes::*
+use super::notes::*;
 use std::default::Default;
 
 struct Scale<T> {
-    node: Vec<Note<T>>,
+    node: Vec<Node<T>>,
     node_type: NodeType,
     key: ENote,
     mode: ScaleType,
@@ -25,7 +25,7 @@ impl<T> ScaleBuilder<T> {
     fn new() -> ScaleBuilder<T> {
         Self {
             inner: Scale {
-               node: Vec::<Note<T>>::new(),
+               node: Vec::<Node<T>>::new(),
                node_type: NodeType::default(),
                key: ENote::C,
                mode: ScaleType::default(),
@@ -53,11 +53,10 @@ impl<T> ScaleBuilder<T> {
         self
     }
 
-    fn inner_scale_builder(&self) -> Vec<Note<T>> {
+    fn inner_scale_builder(&self) -> Vec<Node<T>> {
         let steps = self.inner.mode.scale_pattern();
-        let notes = Vec::<Note<T>>::new();
+        let notes = Vec::<Node<T>>::new();
         for step in steps.into_iter() {
-            notes.push(value)
         }
         notes
     }

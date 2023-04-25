@@ -1,11 +1,19 @@
 use super::traits::{ScaleNode};
 
+#[derive(PartialEq, Debug)]
 pub enum Decorators {
     Natural,
     Sharp,
     Flat,
 }
 
+impl Default for Decorators {
+    fn default() -> Self {
+        Self::Natural
+    }
+}
+
+#[derive(PartialEq, Debug)]
 pub enum Octaves {
     One,
     Two,
@@ -21,6 +29,7 @@ impl Default for Octaves {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub enum Interval {
     One,
     Two,
@@ -31,6 +40,12 @@ pub enum Interval {
     Seven,
 }
 
+impl Default for Interval {
+   fn default() -> Self {
+       Self::One
+   } 
+}
+
 impl ScaleNode for Interval {
 
 }
@@ -39,6 +54,7 @@ pub enum StepType {
     Half,
     Whole,
 }
+
 pub enum ScaleType {
     Major,
     Minor,
@@ -72,6 +88,7 @@ pub enum ChordType {
     Augmented,
 }
 
+#[derive(PartialEq, Debug)]
 pub enum ENote {
     C,
     D,
@@ -82,7 +99,15 @@ pub enum ENote {
     B,
 }
 
-impl ScaleNode for ENote{}
+impl ScaleNode for ENote{
+
+}
+
+impl Default for ENote {
+    fn default() -> Self {
+        Self::C
+    }
+}
 
 pub enum NodeType {
     ENote,

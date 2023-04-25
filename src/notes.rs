@@ -2,24 +2,25 @@ use std::{ops::{Deref, DerefMut}, mem};
 
 use super::*;
 
-pub struct Note<T> {
+#[derive(Default, PartialEq, Debug)]
+pub struct Node<T> {
     node: T,
     decorators: Vec<enums::Decorators>,
     octave: enums::Octaves
 }
 
-impl<T: traits::ScaleNode> Note<T> {
+impl<T: traits::ScaleNode> Node<T> {
     fn new(node: T) -> NodeBuilder<T> {
         NodeBuilder::new(node)
     }
 }
 
 struct NodeBuilder<T> {
-    inner: Note<T>
+    inner: Node<T>
 }
 
 impl<T> Deref for NodeBuilder<T> {
-    type Target = Note<T>;
+    type Target = Node<T>;
 
     fn deref(&self) -> &Self::Target {
         &self.inner
@@ -33,11 +34,12 @@ impl<T> DerefMut for NodeBuilder<T> {
 }
 
 impl<T> NodeBuilder<T> {
+
     fn new(node: T) -> Self {
         Self {
-            inner: Note {
+            inner: Node {
                 node,
-                decorators: Vec::<enums::Decorators>::new(),
+                decorators: Vec::<enums::Decorators>::default(),
                 octave: enums::Octaves::default()
             }
         }
@@ -48,23 +50,51 @@ impl<T> NodeBuilder<T> {
         self
     }
 
+    fn octave(mut self, octave: enums::Octaves) -> Self {
+        self.octave = octave;
+        self
+    }
+
+    fn build(self) -> Node<T> {
+        self.inner
+    }
+
 }
 
 
 #[cfg(test)]
 mod test {
+    use crate::enums::{Decorators, Interval, ENote};
+
     use super::*;
 
     #[test]
     fn test_interval() {
-        let interval = enums::Interval::One;
-        let note = Note::new(interval);
+        let note_left = Node::new(enums::Interval::One)
+                                                .decorators(vec![enums::Decorators::Flat])
+                                                .octave(enums::Octaves::default())
+                                                .build();
+
+        let note_right = Node::<Interval> {
+            node: Interval::One,
+            decorators: vec![enums::Decorators::Flat],
+            octave: enums::Octaves::default()
+        };
+        assert_eq!(note_left, note_right);
     }
 
 
     #[test]
     fn test_note() {
-        let note = enums::ENote::C;
-        let note = Note::new(note);
+        let note_left = Node::new(enums::ENote::C)
+                                            .decorators(vec![enums::Decorators::Sharp, enums::Decorators::Sharp])
+                                            .octave(enums::Octaves::Three)
+                                            .build();
+        let note_right = Node::<ENote> {
+            node: ENote::C,
+            decorators: vec![enums::Decorators::Sharp, enums::Decorators::Sharp],
+            octave: enums::Octaves::Three
+        };
+        assert_eq!(note_left, note_right);
     }
 }
