@@ -1,5 +1,6 @@
-use std::{ops::{Deref, DerefMut}, mem};
+use std::{ops::{Deref, DerefMut, Add}};
 
+use crate::enums::StepType;
 use super::*;
 
 #[derive(Default, PartialEq, Debug)]
@@ -9,13 +10,29 @@ pub struct Node<T> {
     octave: enums::Octaves
 }
 
-impl<T: traits::ScaleNode> Node<T> {
-    fn new(node: T) -> NodeBuilder<T> {
+impl<T: traits::ScaleNode + Into<u8> + Default> Node<T> {
+    pub fn new(node: T) -> NodeBuilder<T> {
         NodeBuilder::new(node)
+    }
+
+    pub fn add(&mut self, step: StepType) -> Self {
+        let node: u8 = self.node.into();
+        let step: u8 = step.into();
+        let temp: u8 = node + step;
+        Node::default()
     }
 }
 
-struct NodeBuilder<T> {
+impl Into<u8> for Node<T> {
+    fn into(self) -> u8 {
+        match node {
+             
+        }
+    }
+}
+
+
+pub struct NodeBuilder<T> {
     inner: Node<T>
 }
 
@@ -35,7 +52,7 @@ impl<T> DerefMut for NodeBuilder<T> {
 
 impl<T> NodeBuilder<T> {
 
-    fn new(node: T) -> Self {
+    pub fn new(node: T) -> Self {
         Self {
             inner: Node {
                 node,
@@ -45,17 +62,17 @@ impl<T> NodeBuilder<T> {
         }
     }
 
-    fn decorators(mut self, decors: Vec<enums::Decorators>) -> Self {
+    pub fn decorators(mut self, decors: Vec<enums::Decorators>) -> Self {
         self.decorators = decors;
         self
     }
 
-    fn octave(mut self, octave: enums::Octaves) -> Self {
+    pub fn octave(mut self, octave: enums::Octaves) -> Self {
         self.octave = octave;
         self
     }
 
-    fn build(self) -> Node<T> {
+    pub fn build(self) -> Node<T> {
         self.inner
     }
 

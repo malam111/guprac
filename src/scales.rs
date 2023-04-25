@@ -2,30 +2,47 @@ use super::traits::*;
 use super::enums::*;
 use super::notes::*;
 use std::default::Default;
+use std::ops::Deref;
+use std::ops::DerefMut;
 
-struct Scale<T> {
-    node: Vec<Node<T>>,
+#[derive(PartialEq, Debug)]
+struct Scale {
     node_type: NodeType,
     key: ENote,
     mode: ScaleType,
+    node: Vec<Node<Interval>>,
 }
 
-impl<T: ScaleNode> Scale<T> {
-    fn new<N>() -> ScaleBuilder<N> {
-        ScaleBuilder::<N>::new()
+impl Scale {
+    fn new() -> ScaleBuilder {
+        ScaleBuilder::new()
     }
 
 }
 
-struct ScaleBuilder<T> {
-   inner: Scale<T> 
+struct ScaleBuilder {
+   inner: Scale 
 }
 
-impl<T> ScaleBuilder<T> {
-    fn new() -> ScaleBuilder<T> {
+impl Deref for ScaleBuilder {
+    type Target = Scale;    
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
+impl DerefMut for ScaleBuilder {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.inner
+    }
+}
+
+impl ScaleBuilder {
+    fn new() -> ScaleBuilder {
         Self {
             inner: Scale {
-               node: Vec::<Node<T>>::new(),
+               node: Vec::<Node<Interval>>::new(),
                node_type: NodeType::default(),
                key: ENote::C,
                mode: ScaleType::default(),
@@ -34,38 +51,57 @@ impl<T> ScaleBuilder<T> {
     }
 
     fn node(mut self, node_type: NodeType) -> Self {
-        self.inner.node_type = node_type;
+        self.node_type = node_type;
         self
     }
 
     fn key(mut self, key: ENote) -> Self {
-        self.inner.key = key;
+        self.key = key;
         self
     }
 
     fn mode(mut self, mode_type: ScaleType) -> Self {
-        self.inner.mode = mode_type;
+        self.mode = mode_type;
         self
     }
 
-    fn build(mut self) -> Self {
-        self.inner.node = self.inner_scale_builder();
-        self
+    fn build(mut self) -> Scale {
+        self.node = self.inner_scale_builder();
+        self.inner
     }
 
-    fn inner_scale_builder(&self) -> Vec<Node<T>> {
-        let steps = self.inner.mode.scale_pattern();
-        let notes = Vec::<Node<T>>::new();
+    fn inner_scale_builder(&self) -> Vec<Node<Interval>> {
+        let steps = self.mode.scale_pattern();
+        let notes = Vec::<Node<Interval>>::new();
+        let mut note = Node::new(Interval::One).build();
         for step in steps.into_iter() {
+            notes.push(note.add(step));
         }
         notes
     }
 }
 
-impl<T> Default for ScaleBuilder<T> {
+impl Default for ScaleBuilder {
     fn default() -> Self {
         Self::new()        
     }
 }
 
+#[cfg(test)]
 
+mod test {
+    use super::*; 
+
+    #[test]
+    fn c_major_scale_interval() {
+        let c_major_left = Scale::new().build();
+        let c_major_right = Scale {
+               node: Vec::<Node<Interval>>::new(),
+               node_type: NodeType::default(),
+               key: ENote::C,
+               mode: ScaleType::default(),
+            };
+
+        assert_eq!(c_major_left, c_major_right);
+    }
+}

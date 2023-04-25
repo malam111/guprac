@@ -50,11 +50,24 @@ impl ScaleNode for Interval {
 
 }
 
+#[derive(PartialEq, Debug)]
+#[repr(u8)]
 pub enum StepType {
     Half,
     Whole,
 }
 
+impl Into<u8> for StepType {
+
+    fn into(self) -> u8 {
+        match self {
+            Self::Half => 1,
+            Self::Whole => 2,
+        }
+    }
+}
+
+#[derive(PartialEq, Debug)]
 pub enum ScaleType {
     Major,
     Minor,
@@ -79,6 +92,7 @@ impl Default for ScaleType {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub enum ChordType {
     Major,
     Minor,
@@ -109,6 +123,7 @@ impl Default for ENote {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub enum NodeType {
     ENote,
     Interval
