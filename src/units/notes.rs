@@ -13,7 +13,7 @@ pub enum Note {
 }
 
 impl Note {
-    fn get_step(&self) -> StepType {
+    pub fn get_step(self) -> StepType {
         match self {
             Note::C => StepType::Whole,
             Note::D => StepType::Whole,
@@ -24,21 +24,43 @@ impl Note {
             Note::B => StepType::Half,
         }
     }
+
+    pub fn prev(&mut self) -> Option<Self> {
+        for i in 0..6 {
+            self.next();
+        }
+        Some(self.clone())
+    }
+    
+    pub fn peek_prev(&self) -> Option<Self> {
+        let mut peek = self.clone();
+        for i in 0..6 {
+            peek.next();
+        }
+        Some(peek)
+    }
+
+    pub fn peek_next(&self) -> Option<Self> {
+        let mut peek = self.clone();
+        peek.next();
+        Some(peek)
+    }
 }
 
 impl Iterator for Note {
     type Item = Self;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self {
-            Note::C => Some(Note::D),
-            Note::D => Some(Note::E),
-            Note::E => Some(Note::F),
-            Note::F => Some(Note::G),
-            Note::G => Some(Note::A),
-            Note::A => Some(Note::B),
-            Note::B => Some(Note::C),
-        }
+        *self = match self {
+            Note::C => Note::D,
+            Note::D => Note::E,
+            Note::E => Note::F,
+            Note::F => Note::G,
+            Note::G => Note::A,
+            Note::A => Note::B,
+            Note::B => Note::C,
+        };
+        Some(self.clone())
     }
 
 }
