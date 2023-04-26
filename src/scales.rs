@@ -10,7 +10,7 @@ struct Scale {
     node_type: NodeType,
     key: ENote,
     mode: ScaleType,
-    node: Vec<Node<Interval>>,
+    node: Vec<Node>,
 }
 
 impl Scale {
@@ -42,7 +42,7 @@ impl ScaleBuilder {
     fn new() -> ScaleBuilder {
         Self {
             inner: Scale {
-               node: Vec::<Node<Interval>>::new(),
+               node: Vec::<Node<ENote>>::new(),
                node_type: NodeType::default(),
                key: ENote::C,
                mode: ScaleType::default(),
@@ -70,10 +70,10 @@ impl ScaleBuilder {
         self.inner
     }
 
-    fn inner_scale_builder(&self) -> Vec<Node<Interval>> {
+    fn inner_scale_builder(&self) -> Vec<Node> {
         let steps = self.mode.scale_pattern();
-        let notes = Vec::<Node<Interval>>::new();
-        let mut note = Node::new(Interval::One).build();
+        let mut notes = Vec::<Node<ENote>>::new();
+        let mut note = Node::new(ENote::C).build();
         for step in steps.into_iter() {
             notes.push(note.add(step));
         }
@@ -93,10 +93,10 @@ mod test {
     use super::*; 
 
     #[test]
-    fn c_major_scale_interval() {
+    fn c_major_scale_enote() {
         let c_major_left = Scale::new().build();
         let c_major_right = Scale {
-               node: Vec::<Node<Interval>>::new(),
+               node: Vec::<Node<ENote>>::new(),
                node_type: NodeType::default(),
                key: ENote::C,
                mode: ScaleType::default(),
