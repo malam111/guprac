@@ -1,4 +1,4 @@
 mod traits;
 mod scales;
-mod notes;
+mod nodes;
 mod units;

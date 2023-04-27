@@ -16,6 +16,10 @@ impl Node {
     pub fn new(node: Note) -> NodeBuilder {
         NodeBuilder::new(node)
     }
+
+    pub fn get_note(&self) -> Note {
+        self.node.get()
+    }
 }
 
 impl Into<u8> for Node {
@@ -73,7 +77,10 @@ impl NodeBuilder {
         self
     }
 
-    pub fn build(self) -> Node {
+    pub fn build(mut self) -> Node {
+        if self.decorators == Vec::<Decorators>::default() {
+            self.decorators.push(Decorators::Natural);
+        }
         self.inner
     }
 
@@ -97,6 +104,8 @@ impl DerefMut for NoContextCacl {
 }
 
 impl NodeCalc for NoContextCacl {
+    type Target = Self;
+
     fn new(node: Node) -> NoContextCacl {
         NoContextCacl {inner: node}
     }
@@ -179,35 +188,6 @@ impl NodeCalc for NoContextCacl {
 
         
     }
-
-    // fn add(&mut self, step: StepType) -> Node {
-    //     match step {
-    //         StepType::Half => {
-    //             match self.node.get_step() {
-    //                 StepType::Half => {
-    //                     self.node = self.node.next().unwrap();
-    //                 },
-    //                 StepType::Whole => {
-    //                     self.node = self.node.next().unwrap();
-    //                     self.decorators.push(Decorators::Flat);
-    //                 }
-    //             }
-    //             return self.clone();
-    //         },
-    //         StepType::Whole => {
-    //             match self.node.get_step() {
-    //                 StepType::Half => {
-    //                     self.decorators.push(Decorators::Sharp);
-    //                 },
-    //                 StepType::Whole => {
-    //                     self.node = self.node.next().unwrap();
-    //                 }
-    //             }
-    //             return self.clone();
-                
-    //         }
-    //     }
-    // }
 
     fn mul_add(&mut self, step: Vec<StepType>) -> &mut Self{
         todo!();
