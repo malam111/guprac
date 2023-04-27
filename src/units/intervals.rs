@@ -1,22 +1,16 @@
-use crate::traits::ScaleNode;
-
-#[derive(PartialEq, Debug)]
+#[repr(u8)]
 pub enum Interval {
-    One,
-    Two,
-    Three,
-    Four,
-    Five,
-    Six,
-    Seven,
-}
-
-impl Default for Interval {
-   fn default() -> Self {
-       Self::One
-   } 
-}
-
-impl ScaleNode for Interval {
-
+    Per1,
+    Min2,
+    Maj2,
+    Min3,
+    Maj3,
+    Per4,
+    Tritone,
+    Per5,
+    Min6,
+    Maj6,
+    Min7,
+    Maj7,
+    Per8
 }
