@@ -5,7 +5,7 @@ pub enum Direction {
     Down,
 }
 
-pub struct Move {
+pub struct Moves {
     interval: Interval,
     direction: Direction,
 }

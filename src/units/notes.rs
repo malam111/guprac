@@ -1,6 +1,6 @@
-use std::ops::{Deref, DerefMut};
+use std::{ops::{Deref, DerefMut}};
 
-use super::{Decor, Decorators};
+use super::{Decorators};
 
 pub enum RawNote {
     C,
@@ -14,7 +14,7 @@ pub enum RawNote {
 
 pub struct Note {
     raw: RawNote,
-    decorators: Decorators,
+    decorators: Vec<Decorators>,
 }
 
 impl Note {
@@ -42,11 +42,17 @@ impl DerefMut for NoteBuilder {
 
 impl NoteBuilder {
     fn new(raw: RawNote) -> Self {
-        NoteBuilder { inner: Note {raw, decorators: Decorators::default() } }
+        NoteBuilder { inner: Note {raw, decorators: Vec::<Decorators>::default() } }
     }
 
-    fn decorators(&mut self, decorator: T) -> &mut Self {
-        self.decorators.extend(decorator.clone().into_iter());
+    fn decorators(&mut self, decorator: Vec<Decorators>) -> &mut Self {
+        self.decorators.extend(decorator);
         self
     }
+
+    fn decorator(&mut self, decorator: Decorators) -> &mut Self {
+        self.decorators.push(decorator);
+        self
+    }
+
 }

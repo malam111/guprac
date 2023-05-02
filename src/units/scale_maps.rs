@@ -1,4 +1,4 @@
-use crate::units::{Move, Direction};
+use crate::units::{Moves, Direction};
 
 enum ScaleMap {
     C,
@@ -16,7 +16,7 @@ enum ScaleMap {
 }
 
 impl ScaleMap {
-    fn distance(src: Self, dst: Self) -> Move {
+    fn distance(src: Self, dst: Self) -> Moves {
         todo!()
     }
 }
