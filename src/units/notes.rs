@@ -1,8 +1,14 @@
+use educe::Educe;
 use std::{ops::{Deref, DerefMut}};
+
+use crate::scales::ScaleMoves;
 
 use super::{Decorators};
 
+#[derive(Educe)]
+#[educe(Default)]
 pub enum RawNote {
+    #[educe(Default)]
     C,
     D,
     E,
@@ -12,6 +18,8 @@ pub enum RawNote {
     B,
 }
 
+#[derive(Educe)]
+#[educe(Default)]
 pub struct Note {
     raw: RawNote,
     decorators: Vec<Decorators>,
@@ -23,26 +31,34 @@ impl Note {
     }
 }
 
-pub struct NoteBuilder {
-    inner: Note
+impl IntoIterator for Note {
+    type Item = Self;
+    type IntoIter = NoteInterator;
+    fn into_iter(self) -> Self::IntoIter {
+        NoteInterator {
+            self
+        } 
+    }
 }
+
+pub struct NoteBuilder (Note);
 
 impl Deref for NoteBuilder {
     type Target = Note;
     fn deref(&self) -> &Self::Target {
-        &self.inner
+        &self.0
     }
 }
 
 impl DerefMut for NoteBuilder {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.inner
+        &mut self.0
     }
 }
 
 impl NoteBuilder {
     fn new(raw: RawNote) -> Self {
-        NoteBuilder { inner: Note {raw, decorators: Vec::<Decorators>::default() } }
+        NoteBuilder(Note {raw, decorators: Vec::<Decorators>::default() })
     }
 
     fn decorators(&mut self, decorator: Vec<Decorators>) -> &mut Self {
@@ -55,4 +71,27 @@ impl NoteBuilder {
         self
     }
 
+    fn build(self) -> Note {
+        self.0
+    }
+
+}
+
+pub struct NoteInterator {
+    note: Note,
+    moves: ScaleMoves,
+}
+
+impl Iterator for NoteInterator {
+    type Item = Note; 
+    
+    fn next(&mut self) -> Option<Self::Item> {
+       Some(Note::new(RawNote::C).build()) 
+    }
+    
+    fn collect<B: FromIterator<Self::Item>>(self) -> B
+        where
+            Self: Sized, {
+        
+    }
 }
