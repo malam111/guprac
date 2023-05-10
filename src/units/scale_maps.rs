@@ -16,6 +16,7 @@ enum ScaleMap {
 }
 
 impl ScaleMap {
+    // TODO: impl distance, go up and down
     fn distance(src: Self, dst: Self) -> Moves {
         todo!()
     }

@@ -31,16 +31,6 @@ impl Note {
     }
 }
 
-impl IntoIterator for Note {
-    type Item = Self;
-    type IntoIter = NoteInterator;
-    fn into_iter(self) -> Self::IntoIter {
-        NoteInterator {
-            self
-        } 
-    }
-}
-
 pub struct NoteBuilder (Note);
 
 impl Deref for NoteBuilder {
@@ -75,23 +65,4 @@ impl NoteBuilder {
         self.0
     }
 
-}
-
-pub struct NoteInterator {
-    note: Note,
-    moves: ScaleMoves,
-}
-
-impl Iterator for NoteInterator {
-    type Item = Note; 
-    
-    fn next(&mut self) -> Option<Self::Item> {
-       Some(Note::new(RawNote::C).build()) 
-    }
-    
-    fn collect<B: FromIterator<Self::Item>>(self) -> B
-        where
-            Self: Sized, {
-        
-    }
 }

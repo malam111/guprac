@@ -37,7 +37,6 @@ impl ScaleType {
         }
         )
     }
-    
 }
 
 pub struct ScaleMoves(Vec<Moves>);

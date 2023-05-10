@@ -17,12 +17,8 @@ pub enum Interval {
     Per8
 }
 
-#[derive(Debug, Default)]
-pub struct ErrInterval;
-
-impl TryFrom<u8> for Interval {
-    type Error = ErrInterval;
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
+impl Interval {
+    fn try_unsigned(value: u8) -> Result<Self, ErrInterval> {
         match value {
             0 => Ok(Self::Per1),
             1 => Ok(Self::Min2),
@@ -43,10 +39,20 @@ impl TryFrom<u8> for Interval {
     }
 }
 
+#[derive(Debug, Default)]
+pub struct ErrInterval;
+
+impl TryFrom<u8> for Interval {
+    type Error = ErrInterval;
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Self::try_unsigned(value)
+    }
+}
+
 impl TryFrom<i8> for Interval {
     type Error = ErrInterval;
     fn try_from(value: i8) -> Result<Self, Self::Error> {
         let value: u8 = (value & 0b01111111) as u8;
-        value.try_into()
+        Self::try_unsigned(value)
     }
 }
