@@ -1,4 +1,4 @@
-use std::convert::TryFrom;
+use std::convert::{TryFrom, Into};
 
 #[repr(u8)]
 pub enum Interval {
@@ -37,6 +37,7 @@ impl Interval {
             _ => Err(ErrInterval::default())
         }
     }
+
 }
 
 #[derive(Debug, Default)]
@@ -54,5 +55,6 @@ impl TryFrom<i8> for Interval {
     fn try_from(value: i8) -> Result<Self, Self::Error> {
         let value: u8 = (value & 0b01111111) as u8;
         Self::try_unsigned(value)
+        
     }
 }

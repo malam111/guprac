@@ -1,5 +1,5 @@
 use educe::Educe;
-use std::{ops::{Deref, DerefMut}};
+use std::{ops::{Deref, DerefMut}, marker::PhantomData};
 
 use crate::scales::ScaleMoves;
 
@@ -18,37 +18,53 @@ pub enum RawNote {
     B,
 }
 
+pub struct Contexted;
+pub struct NoContexted;
+
 #[derive(Educe)]
 #[educe(Default)]
-pub struct Note {
+pub struct Note<State> {
     raw: RawNote,
     decorators: Vec<Decorators>,
+    _state: PhantomData<State>,
 }
 
-impl Note {
-    fn new(raw: RawNote) -> NoteBuilder {
+impl<State> Note<State> {
+    fn new(raw: RawNote) -> NoteBuilder<State> {
         NoteBuilder::new(raw)
     }
 }
 
-pub struct NoteBuilder (Note);
+impl Note<Contexted> {
+    fn add() {
 
-impl Deref for NoteBuilder {
-    type Target = Note;
+    }
+}
+
+impl Note<NoContexted> {
+    fn add() {
+
+    }
+}
+
+pub struct NoteBuilder<T> (Note<T>);
+
+impl<T> Deref for NoteBuilder<T> {
+    type Target = Note<T>;
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl DerefMut for NoteBuilder {
+impl<T> DerefMut for NoteBuilder<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl NoteBuilder {
+impl<T> NoteBuilder<T> {
     fn new(raw: RawNote) -> Self {
-        NoteBuilder(Note {raw, decorators: Vec::<Decorators>::default() })
+        NoteBuilder(Note {raw, ..Note::default() })
     }
 
     fn decorators(&mut self, decorator: Vec<Decorators>) -> &mut Self {
@@ -61,7 +77,7 @@ impl NoteBuilder {
         self
     }
 
-    fn build(self) -> Note {
+    fn build(self) -> Note<T> {
         self.0
     }
 
