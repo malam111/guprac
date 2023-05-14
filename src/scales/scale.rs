@@ -57,6 +57,7 @@ impl ScaleBuilder {
         self
     }
 
+    // TODO: impl this 
     fn construct_scale(&self) {
         
     }

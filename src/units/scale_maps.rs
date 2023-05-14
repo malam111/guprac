@@ -1,10 +1,14 @@
 use std::convert::{TryInto, TryFrom};
 use std::mem::replace;
 
-use crate::units::{Moves, Direction, Interval};
+use crate::scales::Scale;
+use crate::units::{Note, RawNote, Moves, Direction, Interval};
+
+use super::Decorators;
+
 
 #[derive(Copy, Clone, PartialEq)]
-enum ScaleMap {
+pub enum ScaleMap {
     C,
     C_,
     D,
@@ -20,26 +24,26 @@ enum ScaleMap {
 }
 
 impl ScaleMap {
-    pub fn distance(src: Self, dst: Self) -> Moves {
+    pub fn distance(src: &Self, dst: &Self) -> Moves {
         let next: u8 = {
-            let mut temp = src;
+            let mut temp = src.clone();
             let mut idx: u8 = 0;
-            while (temp != dst) {
+            while &temp != dst {
                 temp.next();
                 idx += 1 ;
             }
             idx
         };
         let prev: u8 = {
-            let mut temp = src;
+            let mut temp = src.clone();
             let mut idx: u8 = 0;
-            while (temp != dst) {
+            while &temp != dst {
                 temp.prev();
                 idx += 1 ;
             }
             idx
         };
-        if next > prev {
+        if next < prev {
             return Moves {
                 direction: Direction::Up,
                 interval: Interval::try_from(next).unwrap()
@@ -86,7 +90,7 @@ impl ScaleMap {
         });
     }
 
-    fn move_with(&mut self, moves: Moves) {
+    pub fn move_with(&mut self, moves: Moves) {
         let steps: u8 = moves.interval as u8;
         // FIXME: Improve This
         for i in 0_u8..steps {
@@ -99,5 +103,33 @@ impl ScaleMap {
                 }
             }
         }
+    }
+}
+
+impl From<RawNote> for ScaleMap {
+    fn from(value: RawNote) -> Self {
+        match value {
+            RawNote::A => Self::A,
+            RawNote::B => Self::B,
+            RawNote::C => Self::C,
+            RawNote::D => Self::D,
+            RawNote::E => Self::E,
+            RawNote::F => Self::F,
+            RawNote::G => Self::G,
+        }
+    }
+}
+
+impl<T> From<&Note<T>> for ScaleMap {
+    fn from(value: &Note<T>) -> Self {
+        let mut temp = ScaleMap::from(value.raw()) ;
+        for dec in value.dec().iter() {
+            match *dec {
+                Decorators::Sharp => {temp.next()},
+                Decorators::Flat => {temp.prev()},
+                _ => (),
+            }
+        }
+        temp
     }
 }
