@@ -2,6 +2,7 @@
 #[educe(Default)]
 pub enum Octave {
     #[educe(Default)]
+    O0,
     O1,
     O2,
     O3,
@@ -15,6 +16,7 @@ pub enum Octave {
 impl Octave {
     pub fn next(mut self) {
         self = match self {
+            Self::O0 => Self::O1,
             Self::O1 => Self::O2,
             Self::O2 => Self::O3,
             Self::O3 => Self::O4,
@@ -22,13 +24,14 @@ impl Octave {
             Self::O5 => Self::O6,
             Self::O6 => Self::O7,
             Self::O7 => Self::O8,
-            Self::O8 => Self::O1,
+            Self::O8 => Self::O0,
         };
     }
 
     pub fn prev(mut self) {
         self = match self {
-            Self::O1 => Self::O8,
+            Self::O0 => Self::O8,
+            Self::O1 => Self::O0,
             Self::O2 => Self::O1,
             Self::O3 => Self::O2,
             Self::O4 => Self::O3,

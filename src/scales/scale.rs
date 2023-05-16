@@ -1,20 +1,34 @@
 use std::ops::{Deref, DerefMut};
 use super::ScaleType;
-use crate::units::{Note, Contexted};
+use crate::units::{Note, Contexted, Octave};
+
+#[derive(Default)]
+pub struct ScaleNotes {
+    notes: Vec<Note<Contexted>>,
+    octave: Octave,
+}
 
 #[derive(Educe)]
 #[educe(Default)]
 pub struct Scale {
     key: Note<Contexted>,
     scale_type: ScaleType,
+    inner: ScaleNotes,
 }
 
 impl Scale {
     fn new() -> ScaleBuilder {
         ScaleBuilder(Scale{
-            key: Note::default(),
-            scale_type: ScaleType::default(),
+            ..Default::default()
         })
+    }
+
+    fn octave_from_to(&mut self, from: Octave, to: Octave) {
+        
+    }
+
+    fn get_octave_set(&self) -> &ScaleNotes {
+        &self.inner 
     }
 }
 
