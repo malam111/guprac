@@ -1,9 +1,8 @@
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 use std::error;
 use crate::units::{Interval, ErrInterval};
 
-
-#[derive(PartialEq)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub enum Direction {
     Up,
     Down,
@@ -15,22 +14,35 @@ impl Default for Direction {
     }
 }
 
+#[derive(PartialEq, Copy, Clone, Debug, Default)]
 pub struct Moves {
     pub interval: Interval,
     pub direction: Direction,
 }
 
+
 #[derive(Debug, Default)]
 pub struct ErrMoves;
 
 impl Moves {
-    pub fn from_vec(value: Vec<i8>) -> Result<Vec<Moves>, ErrMoves> {
+    pub fn from_vec(value: Vec<i8>) -> Result<Vec<Self>, ErrMoves> {
         let val_len = value.len();
-        let moves: Vec<Result<Moves, ErrMoves>> = value.into_iter().map(|step|  { let step: Result<Moves, _> = Moves::try_from(step); return step }).filter(|x| x.is_ok()).collect();
+        let moves: Vec<Result<Moves, ErrMoves>> = value.into_iter()
+                                                    .map(|step|  { 
+                                                        let step: Result<Moves, _> = Moves::try_from(step); 
+                                                        return step 
+                                                    })
+                                                    .filter(|x| x.is_ok())
+                                                    .collect();
         if moves.len() == val_len {
             return Ok(moves.into_iter().map(Result::unwrap).collect::<Vec<Moves>>());
         }
         Err(ErrMoves::default()) 
+    }
+
+    // not random yet
+    pub fn rand() -> Self {
+        2_i8.try_into().unwrap()
     }
 }
 
@@ -44,7 +56,7 @@ impl TryFrom<i8> for Moves {
             Ok(Moves {
 
                 interval,
-                direction: if (value.is_positive()) {Direction::Up} else {Direction::Down}
+                direction: if value.is_positive() {Direction::Up} else {Direction::Down}
             })
         } else {
             Err(Self::Error::default())

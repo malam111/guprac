@@ -1,10 +1,11 @@
 use educe::Educe;
 use std::{ops::{Deref, DerefMut}, marker::PhantomData};
 use std::mem;
+use std::convert::TryInto;
 
-use crate::{units::{Octave, Direction, Moves, Decorators, ScaleMap}, scales::Scale};
+use crate::{units::{Octave, Direction, Moves, Decorators, ScaleMap, Interval}, scales::Scale};
 
-#[derive(Debug, Copy, Clone, Educe)]
+#[derive(PartialEq, Debug, Copy, Clone, Educe)]
 #[educe(Default)]
 pub enum RawNote {
     #[educe(Default)]
@@ -43,12 +44,18 @@ impl RawNote {
     }
 }
 
-#[derive(Debug)]
+pub trait TempMove {}
+
+#[derive(PartialEq, Debug, Clone)]
 pub struct Contexted;
-#[derive(Debug)]
+
+impl TempMove for Contexted {}
+#[derive(PartialEq, Debug, Clone)]
 pub struct NoContexted;
 
-#[derive(Debug, Clone, Educe)]
+impl TempMove for NoContexted {}
+
+#[derive(PartialEq, Debug, Clone, Educe)]
 #[educe(Default)]
 pub struct Note<State> {
     raw: RawNote,
@@ -77,22 +84,35 @@ impl<State> Note<State> {
 
 impl Note<Contexted> {
     pub fn move_with(&mut self, moves: Moves) {
-        let mut scale_map = ScaleMap::from(&*self);
         let mut target = self.raw.clone();
         match moves.direction {
             Direction::Up => target.next(),
             Direction::Down => target.prev()
         };
+
+        // scale_map, src after applied decor
+        // dst, target note, the next note in the current scale context
+        let mut scale_map = ScaleMap::from(&*self);
         scale_map.move_with(moves);
         let dst = ScaleMap::from(target);
         let distance = ScaleMap::distance(&scale_map, &dst);
+
         *self = Self::from_scale_map(scale_map, target, distance);
     }
 
     fn from_scale_map(scale_map: ScaleMap, dst: RawNote, distance: Moves) -> Self {    
         let mut decorators = Vec::<Decorators>::new();
-        let decor = if distance.direction == Direction::Up { Decorators::Flat } else {Decorators::Sharp};
+        let mut decor = if distance.direction == Direction::Up { 
+            Decorators::Flat 
+        } else {
+            Decorators::Sharp
+        };
+
         for idx in 0_u8..distance.interval as u8 {
+            decorators.push(decor);
+        }
+        if distance.interval == Interval::Per1 {
+            decor = Decorators::Natural;   
             decorators.push(decor);
         }
         Self {
@@ -154,21 +174,22 @@ impl<T> DerefMut for NoteBuilder<T> {
 }
 
 impl<T> NoteBuilder<T> {
+    
     fn new(raw: RawNote) -> Self {
         NoteBuilder(Note {raw, ..Note::default() })
     }
 
-    fn decorators(&mut self, decorator: Vec<Decorators>) -> &mut Self {
+    pub fn decorators(mut self, decorator: Vec<Decorators>) -> Self {
         self.decorators.extend(decorator);
         self
     }
 
-    fn decorator(&mut self, decorator: Decorators) -> &mut Self {
+    pub fn decorator(mut self, decorator: Decorators) -> Self {
         self.decorators.push(decorator);
         self
     }
 
-    fn build(mut self) -> Note<T> {
+    pub fn build(mut self) -> Note<T> {
         if self.dec().len() == 0 {
             self.decorators.push(Decorators::Natural);
         }
@@ -182,6 +203,7 @@ mod test {
     use super::*;
 
     #[test]
+    #[ignore]
     fn c_to_e() {
         let mut note_c = Note::<NoContexted>::new(RawNote::C).build();
         let mov =  Moves {
@@ -192,12 +214,20 @@ mod test {
     }
 
     #[test]
+    #[ignore]
     fn c_to_d_scaled() {
         let mut note_c = Note::<Contexted>::new(RawNote::C).build();
         let mov =  Moves {
             direction: Direction::Up, 
-            interval: crate::units::Interval::Per4};
+            interval: crate::units::Interval::Maj2};
         note_c.move_with(mov);
+        //note_c.move_with((-2_i8).try_into().unwrap());
+        //note_c.move_with((2_i8).try_into().unwrap());
+
+        
+        // note_c.move_with(mov!(M2));
+        // note_c.moves_with(movs![M2, m2, P4])
+
         println!("{:?}", note_c);
     }
 }

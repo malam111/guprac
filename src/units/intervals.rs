@@ -1,6 +1,7 @@
 use std::convert::{TryFrom, Into};
 
 #[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Interval {
     Per1,
     Min2,
@@ -40,6 +41,12 @@ impl Interval {
 
 }
 
+impl Default for Interval {
+    fn default() -> Self {
+        Self::Per1
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct ErrInterval;
 
@@ -53,8 +60,12 @@ impl TryFrom<u8> for Interval {
 impl TryFrom<i8> for Interval {
     type Error = ErrInterval;
     fn try_from(value: i8) -> Result<Self, Self::Error> {
-        let value: u8 = (value & 0b01111111) as u8;
-        Self::try_unsigned(value)
-        
+        let mut ret: u8 = (value & 0b0000_1111) as u8;
+        if value < 0 {
+            let signed: u8  = (value & 0b1000_0000_u8 as i8) as u8;
+            let usigned: u8 = (value & 0b0111_1111_u8 as i8) as u8;
+            ret = (signed - usigned) as u8;
+        }
+        Self::try_unsigned(ret)
     }
 }

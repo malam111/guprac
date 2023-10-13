@@ -2,7 +2,7 @@ use std::convert::{TryInto, TryFrom};
 use std::mem::replace;
 
 use crate::scales::Scale;
-use crate::units::{Note, RawNote, Moves, Direction, Interval, Octave};
+use crate::units::{Note, RawNote, Moves, Direction, Interval, Octave, TempMove};
 
 use super::Decorators;
 
@@ -56,6 +56,7 @@ impl ScaleMap {
         }
     }
 
+    // return Some if octave changes
     pub fn next(&mut self) -> Option<()> {
         let mut change = None;
         replace(self, match self {
@@ -75,6 +76,7 @@ impl ScaleMap {
         change
     }
 
+    // return Some if octave changes
     pub fn prev(&mut self) -> Option<()> {
         let mut change = None;
         replace(self, match self {
@@ -100,10 +102,10 @@ impl ScaleMap {
         for i in 0_u8..steps {
             match moves.direction {
                 Direction::Up => {  
-                    self.next()
+                    self.next();
                 },
                 Direction::Down => {
-                    self.prev()
+                    self.prev();
                 }
             }
         }
@@ -124,13 +126,13 @@ impl From<RawNote> for ScaleMap {
     }
 }
 
-impl<T> From<&Note<T>> for ScaleMap {
+impl<T: TempMove> From<&Note<T>> for ScaleMap {
     fn from(value: &Note<T>) -> Self {
         let mut temp = ScaleMap::from(value.raw()) ;
         for dec in value.dec().iter() {
             match *dec {
-                Decorators::Sharp => {temp.next()},
-                Decorators::Flat => {temp.prev()},
+                Decorators::Sharp => {temp.next();},
+                Decorators::Flat => {temp.prev();},
                 _ => (),
             }
         }
@@ -141,4 +143,22 @@ impl<T> From<&Note<T>> for ScaleMap {
 struct ScaleMapBuilder {
     inner: ScaleMap,
     octave: Octave,
+}
+
+impl ScaleMapBuilder {
+
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test] 
+    #[ignore]
+    fn scale_map_builder_test() {
+        assert_eq!(
+            ScaleMap::distance(&ScaleMap::C, &ScaleMap::A_),
+            Moves::try_from(-2).unwrap()
+        );
+    }
 }

@@ -1,4 +1,4 @@
-#[derive(Debug, Copy, Clone, Educe)]
+#[derive(PartialEq, Debug, Copy, Clone, Educe)]
 #[educe(Default)]
 pub enum Octave {
     #[educe(Default)]

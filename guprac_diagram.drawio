@@ -1,0 +1,113 @@
+<mxfile host="Electron" modified="2023-10-13T14:18:11.993Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.0.2 Chrome/114.0.5735.289 Electron/25.8.4 Safari/537.36" etag="NMRDOkBhwwjudQdguCvk" version="22.0.2" type="device" pages="3">
+  <diagram id="kgpKYQtTHZ0yAKxKKP6v" name="User Feature">
+    <mxGraphModel dx="1432" dy="884" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="4VnGMviyAfugneSWK4bf-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" parent="1" source="4VnGMviyAfugneSWK4bf-1" target="4VnGMviyAfugneSWK4bf-5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="4VnGMviyAfugneSWK4bf-1" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
+          <mxGeometry x="100" y="280" width="30" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="4VnGMviyAfugneSWK4bf-2" value="Practice Interval/Scale Throughout the Fretbroad While Being Aware of the Octave" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="360" y="200" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="4VnGMviyAfugneSWK4bf-3" value="Practice Chord Progression" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="360" y="280" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="4VnGMviyAfugneSWK4bf-4" value="Practice Scale Throughout the Fretbroad in the Context of a Chord Progression" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="360" y="360" width="280" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="4VnGMviyAfugneSWK4bf-5" value="Bulk or Stream" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="200" y="280" width="120" height="70" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="sPlVwTDL56s5PqzGoqb6" name="Map">
+    <mxGraphModel dx="1364" dy="1942" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="aq3grwvOnc30hIbIuMvJ-3" value="Note&amp;lt;T&amp;gt;" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="670" y="100" width="160" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="aq3grwvOnc30hIbIuMvJ-4" value="-RawNote&lt;br&gt;-Decorators&lt;br&gt;-Octave&lt;br&gt;-PhantomData&amp;lt;T&amp;gt;" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" parent="aq3grwvOnc30hIbIuMvJ-3" vertex="1">
+          <mxGeometry y="50" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="nclZLaMQ8IP7zlh9iIx8-1" value="User&lt;br&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="50" y="250" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="nclZLaMQ8IP7zlh9iIx8-2" value="Server" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="130" y="250" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="nclZLaMQ8IP7zlh9iIx8-3" value="NoteFeeder" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="100" width="160" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="nclZLaMQ8IP7zlh9iIx8-4" value="Starter Note ? default=E&lt;br&gt;Moves ? default=random&lt;br&gt;Lowest Octave? default=2&lt;br&gt;Highest Octave? default=5&lt;br&gt;" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" vertex="1" parent="nclZLaMQ8IP7zlh9iIx8-3">
+          <mxGeometry y="50" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="nclZLaMQ8IP7zlh9iIx8-6" value="ScaleFeeder" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="335" y="350" width="210" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="nclZLaMQ8IP7zlh9iIx8-7" value="Key ? default=C&lt;br&gt;Starter Note ? default=Tonic&lt;br&gt;Moves ? default=random&lt;br&gt;&lt;br&gt;&lt;br&gt;*Feeds with notes that are in scale&lt;br&gt;ScaleDegree form; 1,2b,3#..." style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" vertex="1" parent="nclZLaMQ8IP7zlh9iIx8-6">
+          <mxGeometry y="50" width="210" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="nclZLaMQ8IP7zlh9iIx8-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="nclZLaMQ8IP7zlh9iIx8-4" target="aq3grwvOnc30hIbIuMvJ-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="nclZLaMQ8IP7zlh9iIx8-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;dashed=1;" edge="1" parent="1" source="nclZLaMQ8IP7zlh9iIx8-18" target="aq3grwvOnc30hIbIuMvJ-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="nclZLaMQ8IP7zlh9iIx8-18" value="Note&amp;lt;Contexted&amp;gt;" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="670" y="310" width="160" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="nclZLaMQ8IP7zlh9iIx8-19" value="Convert into ScaleDegree" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" vertex="1" parent="nclZLaMQ8IP7zlh9iIx8-18">
+          <mxGeometry y="50" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="nclZLaMQ8IP7zlh9iIx8-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="nclZLaMQ8IP7zlh9iIx8-7" target="nclZLaMQ8IP7zlh9iIx8-19">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="nclZLaMQ8IP7zlh9iIx8-22" value="ChordFeeder" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="90" y="-90" width="160" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="nclZLaMQ8IP7zlh9iIx8-23" value="Starter Note ? default=E&lt;br&gt;Moves ? default=random&lt;br&gt;Lowest Octave? default=2&lt;br&gt;Highest Octave? default=5&lt;br&gt;" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" vertex="1" parent="nclZLaMQ8IP7zlh9iIx8-22">
+          <mxGeometry y="50" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="nclZLaMQ8IP7zlh9iIx8-24" value="Chord&amp;lt;T&amp;gt;" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="645" y="-90" width="210" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="nclZLaMQ8IP7zlh9iIx8-25" value="Name? c#b9 &lt;br&gt;ScaleDegree: Option&amp;lt;&amp;gt;&lt;br&gt;Root?&amp;nbsp;&lt;br&gt;Notes: vec&amp;lt;Note&amp;lt;Contexted&amp;gt;&amp;gt;" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" vertex="1" parent="nclZLaMQ8IP7zlh9iIx8-24">
+          <mxGeometry y="50" width="210" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="nclZLaMQ8IP7zlh9iIx8-29" value="ChordBuilder" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="335" y="-90" width="210" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="nclZLaMQ8IP7zlh9iIx8-30" value="Notes? ScaleDegree?&lt;br&gt;Default Chord Quality?&lt;br&gt;Notes: vec&amp;lt;Note&amp;lt;Contexted&amp;gt;&amp;gt;" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" vertex="1" parent="nclZLaMQ8IP7zlh9iIx8-29">
+          <mxGeometry y="50" width="210" height="70" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="alplvbwwatF9oLdkMIc8" name="Interval">
+    <mxGraphModel dx="1432" dy="884" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="FFzLnf2TySPRxP-uFRew-1" value="User&lt;br&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="50" y="250" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="FFzLnf2TySPRxP-uFRew-2" value="Server" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="250" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="FFzLnf2TySPRxP-uFRew-4" value="Note Feeder" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=50;horizontalStack=0;rounded=1;fontSize=14;fontStyle=0;strokeWidth=2;resizeParent=0;resizeLast=1;shadow=0;dashed=0;align=center;arcSize=4;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="100" width="160" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="FFzLnf2TySPRxP-uFRew-5" value="+Attribute1&#xa;+Attribute2&#xa;+Attribute3" style="align=left;strokeColor=none;fillColor=none;spacingLeft=4;fontSize=12;verticalAlign=top;resizable=0;rotatable=0;part=1;html=1;" vertex="1" parent="FFzLnf2TySPRxP-uFRew-4">
+          <mxGeometry y="50" width="160" height="70" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
