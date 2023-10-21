@@ -1,6 +1,13 @@
 use std::convert::{TryFrom, TryInto};
 use std::error;
 use crate::units::{Interval, ErrInterval};
+use rand::Rng;
+
+
+pub trait Moveable {
+
+    fn move_with(&mut self, moves: Moves);
+}
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum Direction {
@@ -42,7 +49,7 @@ impl Moves {
 
     // not random yet
     pub fn rand() -> Self {
-        2_i8.try_into().unwrap()
+        rand::thread_rng().gen_range(-12_i8..=12).try_into().unwrap()
     }
 }
 

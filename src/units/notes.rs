@@ -3,7 +3,7 @@ use std::{ops::{Deref, DerefMut}, marker::PhantomData};
 use std::mem;
 use std::convert::TryInto;
 
-use crate::{units::{Octave, Direction, Moves, Decorators, ScaleMap, Interval}, scales::Scale};
+use crate::{units::{Octave, Direction, Moves, Decorators, ScaleMap, Interval, Moveable}, scales::Scale};
 
 #[derive(PartialEq, Debug, Copy, Clone, Educe)]
 #[educe(Default)]
@@ -77,13 +77,10 @@ impl<State> Note<State> {
         &self.decorators
     }
 
-    fn resolve(&self) {
-        
-    }
 }
 
-impl Note<Contexted> {
-    pub fn move_with(&mut self, moves: Moves) {
+impl Moveable for Note<Contexted> {
+    fn move_with(&mut self, moves: Moves) {
         let mut target = self.raw.clone();
         match moves.direction {
             Direction::Up => target.next(),
@@ -99,6 +96,9 @@ impl Note<Contexted> {
 
         *self = Self::from_scale_map(scale_map, target, distance);
     }
+}
+
+impl Note<Contexted> {
 
     fn from_scale_map(scale_map: ScaleMap, dst: RawNote, distance: Moves) -> Self {    
         let mut decorators = Vec::<Decorators>::new();
@@ -121,16 +121,27 @@ impl Note<Contexted> {
             ..Default::default()
         }
     }
+
+    pub fn resolve(&mut self) {
+        self.move_with(0_i8.try_into().unwrap());
+    }
 }
 
 
-impl Note<NoContexted> {
-    pub fn move_with(&mut self, moves: Moves) {
+impl Moveable for Note<NoContexted> {
+    fn move_with(&mut self, moves: Moves) {
         // FIXME: Improve?
         let mut scale_map = ScaleMap::from(&*self);
         scale_map.move_with(moves);
         *self = scale_map.into();
     }
+}
+
+impl Note<NoContexted> {
+    pub fn resolve(&mut self) {
+        self.move_with(0_i8.try_into().unwrap());
+    }
+
 }
 
 impl From<ScaleMap> for Note<NoContexted> {
@@ -203,18 +214,16 @@ mod test {
     use super::*;
 
     #[test]
-    #[ignore]
     fn c_to_e() {
         let mut note_c = Note::<NoContexted>::new(RawNote::C).build();
         let mov =  Moves {
             direction: Direction::Up, 
             interval: crate::units::Interval::Maj3};
         note_c.move_with(mov);
-        println!("{:?}", note_c);
+        //println!("{:?}", note_c);
     }
 
     #[test]
-    #[ignore]
     fn c_to_d_scaled() {
         let mut note_c = Note::<Contexted>::new(RawNote::C).build();
         let mov =  Moves {
@@ -228,6 +237,6 @@ mod test {
         // note_c.move_with(mov!(M2));
         // note_c.moves_with(movs![M2, m2, P4])
 
-        println!("{:?}", note_c);
+        //println!("{:?}", note_c);
     }
 }

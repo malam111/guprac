@@ -154,7 +154,6 @@ mod test {
     use super::*;
 
     #[test] 
-    #[ignore]
     fn scale_map_builder_test() {
         assert_eq!(
             ScaleMap::distance(&ScaleMap::C, &ScaleMap::A_),
