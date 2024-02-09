@@ -44,16 +44,11 @@ impl RawNote {
     }
 }
 
-pub trait TempMove {}
+#[derive(PartialEq, Debug, Clone)]
+pub struct WithScale;
 
 #[derive(PartialEq, Debug, Clone)]
-pub struct Contexted;
-
-impl TempMove for Contexted {}
-#[derive(PartialEq, Debug, Clone)]
-pub struct NoContexted;
-
-impl TempMove for NoContexted {}
+pub struct NoScale;
 
 #[derive(PartialEq, Debug, Clone, Educe)]
 #[educe(Default)]
@@ -79,7 +74,7 @@ impl<State> Note<State> {
 
 }
 
-impl Moveable for Note<Contexted> {
+impl Moveable for Note<WithScale> {
     fn move_with(&mut self, moves: Moves) {
         let mut target = self.raw.clone();
         match moves.direction {
@@ -98,7 +93,7 @@ impl Moveable for Note<Contexted> {
     }
 }
 
-impl Note<Contexted> {
+impl Note<WithScale> {
 
     fn from_scale_map(scale_map: ScaleMap, dst: RawNote, distance: Moves) -> Self {    
         let mut decorators = Vec::<Decorators>::new();
@@ -128,7 +123,7 @@ impl Note<Contexted> {
 }
 
 
-impl Moveable for Note<NoContexted> {
+impl Moveable for Note<NoScale> {
     fn move_with(&mut self, moves: Moves) {
         // FIXME: Improve?
         let mut scale_map = ScaleMap::from(&*self);
@@ -137,14 +132,14 @@ impl Moveable for Note<NoContexted> {
     }
 }
 
-impl Note<NoContexted> {
+impl Note<NoScale> {
     pub fn resolve(&mut self) {
         self.move_with(0_i8.try_into().unwrap());
     }
 
 }
 
-impl From<ScaleMap> for Note<NoContexted> {
+impl From<ScaleMap> for Note<NoScale> {
     fn from(value: ScaleMap) -> Self {
         let mut sharp = false;
         let raw: RawNote = match value {
@@ -169,45 +164,6 @@ impl From<ScaleMap> for Note<NoContexted> {
     }
 }
 
-pub struct NoteBuilder<T> (Note<T>);
-
-impl<T> Deref for NoteBuilder<T> {
-    type Target = Note<T>;
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl<T> DerefMut for NoteBuilder<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl<T> NoteBuilder<T> {
-    
-    fn new(raw: RawNote) -> Self {
-        NoteBuilder(Note {raw, ..Note::default() })
-    }
-
-    pub fn decorators(mut self, decorator: Vec<Decorators>) -> Self {
-        self.decorators.extend(decorator);
-        self
-    }
-
-    pub fn decorator(mut self, decorator: Decorators) -> Self {
-        self.decorators.push(decorator);
-        self
-    }
-
-    pub fn build(mut self) -> Note<T> {
-        if self.dec().len() == 0 {
-            self.decorators.push(Decorators::Natural);
-        }
-        self.0
-    }
-
-}
 
 #[cfg(test)]
 mod test {
@@ -215,7 +171,7 @@ mod test {
 
     #[test]
     fn c_to_e() {
-        let mut note_c = Note::<NoContexted>::new(RawNote::C).build();
+        let mut note_c = Note::<NoScale>::new(RawNote::C).build();
         let mov =  Moves {
             direction: Direction::Up, 
             interval: crate::units::Interval::Maj3};
@@ -225,7 +181,7 @@ mod test {
 
     #[test]
     fn c_to_d_scaled() {
-        let mut note_c = Note::<Contexted>::new(RawNote::C).build();
+        let mut note_c = Note::<WithScale>::new(RawNote::C).build();
         let mov =  Moves {
             direction: Direction::Up, 
             interval: crate::units::Interval::Maj2};
@@ -238,5 +194,10 @@ mod test {
         // note_c.moves_with(movs![M2, m2, P4])
 
         //println!("{:?}", note_c);
+    }
+
+    #[test]
+    fn builder_test() {
+        assert!(true);
     }
 }

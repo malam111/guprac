@@ -1,10 +1,10 @@
 #[derive(PartialEq, Debug, Copy, Clone, Educe)]
 #[educe(Default)]
 pub enum Octave {
-    #[educe(Default)]
     O0,
     O1,
     O2,
+    #[educe(Default)]
     O3,
     O4,
     O5,

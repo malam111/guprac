@@ -1,13 +1,15 @@
 use std::ops::{Deref, DerefMut};
 use std::convert::{TryInto};
 
-use crate::units::{Note, RawNote, Contexted, Moves, Octave, Decorators, Moveable};
+use crate::units::{Note, RawNote, WithScale, Moves, Octave, Decorators, Moveable};
+use crate::scales::{Scale};
 
 #[derive(PartialEq, Debug, Default)]
 pub struct ScaleFeeder {
-    tonic: Note<Contexted>,
-    note:  Note<Contexted>,
+    tonic: Note<WithScale>,
+    note:  Note<WithScale>,
     moves: Option<Moves>,
+    scale: Option<Scale>,
     low_octave: Octave,
     high_octave: Octave,
 }
@@ -17,8 +19,8 @@ impl ScaleFeeder {
         ScaleFeederBuilder::new() 
     }
 
-    fn bulk(&mut self, size: u8) -> Vec<Note<Contexted>> {
-        let mut vec: Vec<Note<Contexted>> = vec!();
+    fn bulk(&mut self, size: u8) -> Vec<Note<WithScale>> {
+        let mut vec: Vec<Note<WithScale>> = vec!();
         for idx in 0..size {
             vec.push(self.next().unwrap());
         }
@@ -27,7 +29,7 @@ impl ScaleFeeder {
 }
 
 impl Iterator for ScaleFeeder {
-    type Item = Note<Contexted>;
+    type Item = Note<WithScale>;
     
     fn next(&mut self) -> Option<Self::Item> {
         let ret = self.note.clone();
@@ -61,8 +63,8 @@ impl ScaleFeederBuilder {
     
     pub fn new() -> Self {
         let mut builder = Self::default();
-        builder.tonic = Note::<Contexted>::new(RawNote::C).build();
-        builder.note = Note::<Contexted>::new(RawNote::C).build();
+        builder.tonic = Note::<WithScale>::new(RawNote::C).build();
+        builder.note = Note::<WithScale>::new(RawNote::C).build();
         builder.moves = None;
         builder.low_octave = Octave::O2;
         builder.high_octave = Octave::O4;
@@ -70,7 +72,7 @@ impl ScaleFeederBuilder {
         builder
     }
 
-    pub fn starter_note(mut self, starter: Note<Contexted>) -> Self {
+    pub fn starter_note(mut self, starter: Note<WithScale>) -> Self {
         self.note = starter;
         self
     }
@@ -103,7 +105,8 @@ mod test {
     #[test]
     fn builder_test() {
         let note_l = ScaleFeeder {
-            note: Note::<Contexted>::new(RawNote::C).build(),
+            tonic: Note::<WithScale>::new(RawNote::C).build(),
+            note: Note::<WithScale>::new(RawNote::C).build(),
             moves: Some(4_i8.try_into().unwrap()),
             low_octave: Octave::O2,
             high_octave: Octave::O4,
@@ -119,9 +122,9 @@ mod test {
 
     #[test]
     fn iter_test() {
-        let mut note_l = Note::<Contexted>::new(RawNote::D).build();
+        let mut note_l = Note::<WithScale>::new(RawNote::D).build();
         let mut note_r = ScaleFeeder::new()
-                            .starter_note(Note::<Contexted>::new(RawNote::C).build())
+                            .starter_note(Note::<WithScale>::new(RawNote::C).build())
                             .moves(2_i8.try_into().unwrap())
                             .low_octave(Octave::O2)
                             .high_octave(Octave::O4)
@@ -135,15 +138,15 @@ mod test {
 
     #[test]
     fn bulk_test() {
-        let note_a = Note::<Contexted>::new(RawNote::A).build();
-        let note_b = Note::<Contexted>::new(RawNote::B).build();
-        let note_cs = Note::<Contexted>::new(RawNote::C).decorators(vec![Decorators::Sharp]).build();
-        let note_ds = Note::<Contexted>::new(RawNote::D).decorator(Decorators::Sharp).build();
+        let note_a = Note::<WithScale>::new(RawNote::A).build();
+        let note_b = Note::<WithScale>::new(RawNote::B).build();
+        let note_cs = Note::<WithScale>::new(RawNote::C).decorators(vec![Decorators::Sharp]).build();
+        let note_ds = Note::<WithScale>::new(RawNote::D).decorator(Decorators::Sharp).build();
 
         let notes_l = vec!(note_a, note_b, note_cs, note_ds);
 
         let mut note_r = ScaleFeeder::new()
-                            .starter_note(Note::<Contexted>::new(RawNote::A).build())
+                            .starter_note(Note::<WithScale>::new(RawNote::A).build())
                             .moves(2_i8.try_into().unwrap())
                             .low_octave(Octave::O2)
                             .high_octave(Octave::O4)
@@ -151,7 +154,7 @@ mod test {
                             .bulk(4)
                             .into_iter()
                             .map(|mut note| { note.resolve(); note })
-                            .collect::<Vec<Note<Contexted>>>();
+                            .collect::<Vec<Note<WithScale>>>();
         
         assert_eq!(notes_l, note_r);
         
@@ -160,7 +163,7 @@ mod test {
     #[test]
     fn rand_test() {
         let mut feeder = ScaleFeeder::new()
-                            .starter_note(Note::<Contexted>::new(RawNote::A).build())
+                            .starter_note(Note::<WithScale>::new(RawNote::A).build())
                             .low_octave(Octave::O2)
                             .high_octave(Octave::O4)
                             .build()

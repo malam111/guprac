@@ -5,7 +5,6 @@ use rand::Rng;
 
 
 pub trait Moveable {
-
     fn move_with(&mut self, moves: Moves);
 }
 
@@ -41,8 +40,11 @@ impl Moves {
                                                     })
                                                     .filter(|x| x.is_ok())
                                                     .collect();
+        // TODO: Handle Err/Panic
         if moves.len() == val_len {
-            return Ok(moves.into_iter().map(Result::unwrap).collect::<Vec<Moves>>());
+            return Ok(moves.into_iter()
+                .map(Result::unwrap)
+                .collect::<Vec<Moves>>());
         }
         Err(ErrMoves::default()) 
     }
@@ -70,3 +72,46 @@ impl TryFrom<i8> for Moves {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn move_from_i8_test() {
+        let moves: Moves = Moves {
+            interval: Interval::Maj3,
+            direction: Direction::Down
+        };
+        assert_eq!(moves, Moves::try_from(-4_i8).unwrap());
+    }
+
+    #[test]
+    #[should_panic]
+    fn move_from_i8_panic_test() {
+        let moves: Moves = Moves {
+            interval: Interval::Maj3,
+            direction: Direction::Down
+        };
+        assert_eq!(moves, Moves::try_from(-13_i8).unwrap());
+    }
+
+    #[test]
+    fn move_from_vec_test() {
+        let vec: Vec<Moves> = vec!(
+            Moves {
+                interval: Interval::Tritone,
+                direction: Direction::Up,
+            },
+            Moves {
+                interval: Interval::Min6,
+                direction: Direction::Down,
+            },
+        );
+        assert_eq!(
+            vec,
+            Moves::from_vec(vec![6, -8]).unwrap()
+        )
+    }
+}
+

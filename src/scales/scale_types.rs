@@ -2,7 +2,7 @@
 use std::ops::{Deref, DerefMut};
 
 use crate::units::{Interval, Direction};
-use super::{Scale};
+//use super::{Scale};
 use crate::units::Moves;
 
 #[derive(Educe)]

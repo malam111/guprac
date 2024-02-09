@@ -1,8 +1,8 @@
 use std::convert::{TryInto, TryFrom};
 use std::mem::replace;
 
-use crate::scales::Scale;
-use crate::units::{Note, RawNote, Moves, Direction, Interval, Octave, TempMove};
+//use crate::scales::Scale;
+use crate::units::{/*Note, RawNote,*/ Moves, Direction, Interval, Octave, Moveable};
 
 use super::Decorators;
 
@@ -96,58 +96,66 @@ impl ScaleMap {
         change
     }
 
-    pub fn move_with(&mut self, moves: Moves) {
+    pub fn move_with(&mut self, moves: Moves) -> Option<()> {
         let steps: u8 = moves.interval as u8;
+        let mut change = None;
         // FIXME: Improve This
         for i in 0_u8..steps {
             match moves.direction {
                 Direction::Up => {  
-                    self.next();
+                    match self.next() {
+                        Some(ret) => { change = Some(ret); }
+                        _ => {} 
+                    }
                 },
                 Direction::Down => {
-                    self.prev();
+                    match self.prev() {
+                        Some(ret) => { change = Some(ret); }
+                        _ => {} 
+                    }
                 }
             }
         }
+        change
     }
 }
 
-impl From<RawNote> for ScaleMap {
-    fn from(value: RawNote) -> Self {
-        match value {
-            RawNote::A => Self::A,
-            RawNote::B => Self::B,
-            RawNote::C => Self::C,
-            RawNote::D => Self::D,
-            RawNote::E => Self::E,
-            RawNote::F => Self::F,
-            RawNote::G => Self::G,
-        }
-    }
-}
+//impl From<RawNote> for ScaleMap {
+//    fn from(value: RawNote) -> Self {
+//        match value {
+//            RawNote::A => Self::A,
+//            RawNote::B => Self::B,
+//            RawNote::C => Self::C,
+//            RawNote::D => Self::D,
+//            RawNote::E => Self::E,
+//            RawNote::F => Self::F,
+//            RawNote::G => Self::G
+//        }
+//    }
+//}
 
-impl<T: TempMove> From<&Note<T>> for ScaleMap {
-    fn from(value: &Note<T>) -> Self {
-        let mut temp = ScaleMap::from(value.raw()) ;
-        for dec in value.dec().iter() {
-            match *dec {
-                Decorators::Sharp => {temp.next();},
-                Decorators::Flat => {temp.prev();},
-                _ => (),
-            }
-        }
-        temp
-    }
-}
-
-struct ScaleMapBuilder {
-    inner: ScaleMap,
-    octave: Octave,
-}
-
-impl ScaleMapBuilder {
-
-}
+//impl<T: Moveable> From<&Note<T>> for ScaleMap {
+//    fn from(value: &Note<T>) -> Self {
+//        let mut temp = ScaleMap::from(value.raw()) ;
+//        for dec in value.dec().iter() {
+//            match *dec {
+//                Decorators::Sharp => {temp.next();},
+//                Decorators::Flat => {temp.prev();},
+//                _ => (),
+//            }
+//        }
+//        temp
+//    }
+//}
+//
+//struct ScaleMapBuilder {
+//    inner: ScaleMap,
+//    octave: Octave,
+//}
+//
+//impl ScaleMapBuilder {
+//
+//}
 
 #[cfg(test)]
 mod test {

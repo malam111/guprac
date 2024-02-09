@@ -69,3 +69,19 @@ impl TryFrom<i8> for Interval {
         Self::try_unsigned(ret)
     }
 }
+
+#[cfg(test)]
+mod test{
+    
+    use super::*;
+
+    #[test]
+    fn u8_test() {
+        assert_eq!(Interval::Maj3, Interval::try_from(4_u8).unwrap());
+    }
+
+    #[test]
+    fn i8_test() {
+        assert_eq!(Interval::Maj3, Interval::try_from(4_i8).unwrap());
+    }
+}
