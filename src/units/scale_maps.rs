@@ -2,12 +2,12 @@ use std::convert::{TryInto, TryFrom};
 use std::mem::replace;
 
 //use crate::scales::Scale;
-use crate::units::{/*Note, RawNote,*/ Moves, Direction, Interval, Octave, Moveable};
+use crate::units::{Note, RawNote, Moves, Direction, Interval, Octave, Moveable};
 
 use super::Decorators;
 
 // TODO: ScaleMap Builder for interface octave
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub enum ScaleMap {
     C,
     C_,
@@ -120,33 +120,7 @@ impl ScaleMap {
     }
 }
 
-//impl From<RawNote> for ScaleMap {
-//    fn from(value: RawNote) -> Self {
-//        match value {
-//            RawNote::A => Self::A,
-//            RawNote::B => Self::B,
-//            RawNote::C => Self::C,
-//            RawNote::D => Self::D,
-//            RawNote::E => Self::E,
-//            RawNote::F => Self::F,
-//            RawNote::G => Self::G
-//        }
-//    }
-//}
 
-//impl<T: Moveable> From<&Note<T>> for ScaleMap {
-//    fn from(value: &Note<T>) -> Self {
-//        let mut temp = ScaleMap::from(value.raw()) ;
-//        for dec in value.dec().iter() {
-//            match *dec {
-//                Decorators::Sharp => {temp.next();},
-//                Decorators::Flat => {temp.prev();},
-//                _ => (),
-//            }
-//        }
-//        temp
-//    }
-//}
 //
 //struct ScaleMapBuilder {
 //    inner: ScaleMap,

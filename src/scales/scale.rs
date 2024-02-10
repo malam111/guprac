@@ -1,17 +1,17 @@
 use std::ops::{Deref, DerefMut};
 use super::ScaleType;
-use crate::units::{Note, WithScale, Octave};
+use crate::units::{Note, Scaled, Octave};
 
 #[derive(Default)]
 pub struct ScaleNotes {
-    notes: Vec<Note<WithScale>>,
+    notes: Vec<Note<Scaled>>,
     octave: Octave,
 }
 
 #[derive(Educe)]
 #[educe(Default)]
 pub struct Scale {
-    key: Note<WithScale>,
+    key: Note<Scaled>,
     scale_type: ScaleType,
     inner: ScaleNotes,
 }
@@ -33,7 +33,7 @@ impl Scale {
 }
 
 impl Iterator for Scale {
-    type Item = Note<WithScale>;
+    type Item = Note<Scaled>;
     
     fn next(&mut self) -> Option<Self::Item> {
        None 
@@ -61,7 +61,7 @@ impl ScaleBuilder {
         ScaleBuilder (Scale::default())
     }
 
-    pub fn key(&mut self, key: Note<WithScale>) -> &mut Self {
+    pub fn key(&mut self, key: Note<Scaled>) -> &mut Self {
         self.key = key;
         self
     }

@@ -1,12 +1,13 @@
 use educe::Educe;
 use std::{ops::{Deref, DerefMut}, marker::PhantomData};
 use std::mem;
-use std::convert::TryInto;
+use std::convert::{TryInto, TryFrom};
 
-use crate::{units::{Octave, Direction, Moves, Decorators, ScaleMap, Interval, Moveable}, scales::Scale};
+use crate::{units::{Octave, Direction, Moves, Decorators, ScaleMap, Interval, Moveable}, /*scales::Scale*/};
 
 #[derive(PartialEq, Debug, Copy, Clone, Educe)]
 #[educe(Default)]
+#[repr(i8)]
 pub enum RawNote {
     #[educe(Default)]
     C,
@@ -42,13 +43,31 @@ impl RawNote {
             Self::B => Self::A 
         });
     }
+
+    //pub fn distance(src: &Self, dst: &Self) -> Moves {
+    //    RawNote
+    //}
+}
+
+impl From<RawNote> for ScaleMap {
+    fn from(value: RawNote) -> Self {
+        match value {
+            RawNote::A => Self::A,
+            RawNote::B => Self::B,
+            RawNote::C => Self::C,
+            RawNote::D => Self::D,
+            RawNote::E => Self::E,
+            RawNote::F => Self::F,
+            RawNote::G => Self::G
+        }
+    }
 }
 
 #[derive(PartialEq, Debug, Clone)]
-pub struct WithScale;
+pub struct Scaled;
 
 #[derive(PartialEq, Debug, Clone)]
-pub struct NoScale;
+pub struct NotScaled;
 
 #[derive(PartialEq, Debug, Clone, Educe)]
 #[educe(Default)]
@@ -59,10 +78,24 @@ pub struct Note<State> {
     _state: PhantomData<State>,
 }
 
-impl<State> Note<State> {
-    pub fn new(raw: RawNote) -> NoteBuilder<State> {
-        NoteBuilder::new(raw)
+impl<T> From<&Note<T>> for ScaleMap {
+    fn from(value: &Note<T>) -> Self {
+        let mut temp: ScaleMap = value.raw().into();
+        for dec in value.dec().iter() {
+            match *dec {
+                Decorators::Sharp => {temp.next();},
+                Decorators::Flat => {temp.prev();},
+                _ => (),
+            }
+        }
+        temp
     }
+}
+
+impl<State> Note<State> {
+    //pub fn new(raw: RawNote) -> NoteBuilder<State> {
+        //NoteBuilder::new(raw)
+    //}
 
     pub fn raw(&self) -> RawNote {
         self.raw
@@ -74,13 +107,17 @@ impl<State> Note<State> {
 
 }
 
-impl Moveable for Note<WithScale> {
-    fn move_with(&mut self, moves: Moves) {
+impl Note<Scaled> {
+    // FIXME: check times
+    fn move_with(&mut self, moves: Moves, times: u8) {
+        // TODO: adjust target with scale target
         let mut target = self.raw.clone();
-        match moves.direction {
-            Direction::Up => target.next(),
-            Direction::Down => target.prev()
-        };
+        for _ in 0..times {
+            match moves.direction {
+                Direction::Up => target.next(),
+                Direction::Down => target.prev()
+            };
+        }
 
         // scale_map, src after applied decor
         // dst, target note, the next note in the current scale context
@@ -91,9 +128,6 @@ impl Moveable for Note<WithScale> {
 
         *self = Self::from_scale_map(scale_map, target, distance);
     }
-}
-
-impl Note<WithScale> {
 
     fn from_scale_map(scale_map: ScaleMap, dst: RawNote, distance: Moves) -> Self {    
         let mut decorators = Vec::<Decorators>::new();
@@ -118,28 +152,26 @@ impl Note<WithScale> {
     }
 
     pub fn resolve(&mut self) {
-        self.move_with(0_i8.try_into().unwrap());
+        self.move_with(0_i8.try_into().unwrap(), 0);
     }
 }
 
 
-impl Moveable for Note<NoScale> {
+impl Note<NotScaled> {
     fn move_with(&mut self, moves: Moves) {
         // FIXME: Improve?
         let mut scale_map = ScaleMap::from(&*self);
         scale_map.move_with(moves);
         *self = scale_map.into();
     }
-}
 
-impl Note<NoScale> {
     pub fn resolve(&mut self) {
         self.move_with(0_i8.try_into().unwrap());
     }
 
 }
 
-impl From<ScaleMap> for Note<NoScale> {
+impl From<ScaleMap> for Note<NotScaled> {
     fn from(value: ScaleMap) -> Self {
         let mut sharp = false;
         let raw: RawNote = match value {
@@ -170,34 +202,121 @@ mod test {
     use super::*;
 
     #[test]
-    fn c_to_e() {
-        let mut note_c = Note::<NoScale>::new(RawNote::C).build();
-        let mov =  Moves {
-            direction: Direction::Up, 
-            interval: crate::units::Interval::Maj3};
-        note_c.move_with(mov);
-        //println!("{:?}", note_c);
+    fn note_to_scalemap_sharp_test() {
+        let note = Note::<NotScaled> {
+            decorators: vec!(
+                Decorators::Sharp, 
+                Decorators::Sharp, 
+                Decorators::Sharp
+            ),
+            ..Note::default()
+        };
+        let scalemap: ScaleMap = (&note).into();
+         
+        assert_eq!(ScaleMap::D_, scalemap);
     }
 
     #[test]
-    fn c_to_d_scaled() {
-        let mut note_c = Note::<WithScale>::new(RawNote::C).build();
-        let mov =  Moves {
-            direction: Direction::Up, 
-            interval: crate::units::Interval::Maj2};
-        note_c.move_with(mov);
-        //note_c.move_with((-2_i8).try_into().unwrap());
-        //note_c.move_with((2_i8).try_into().unwrap());
-
-        
-        // note_c.move_with(mov!(M2));
-        // note_c.moves_with(movs![M2, m2, P4])
-
-        //println!("{:?}", note_c);
+    fn note_to_scalemap_flat_test() {
+        let note = Note::<Scaled> {
+            raw: RawNote::D,
+            decorators: vec!(
+                Decorators::Flat, 
+                Decorators::Flat, 
+            ),
+            ..Note::default()
+        };
+        let scalemap: ScaleMap = (&note).into();
+         
+        assert_eq!(ScaleMap::C, scalemap);
     }
 
     #[test]
-    fn builder_test() {
-        assert!(true);
+    fn note_cs_to_f_not_scaled_test() {
+        let mut note_right = Note::<NotScaled> {
+            raw: RawNote::C,
+            decorators: vec!(
+                Decorators::Sharp, 
+            ),
+            ..Note::default() 
+        };
+        let note_left = Note::<NotScaled> {
+            raw: RawNote::F,
+            decorators: vec!(
+                Decorators::Natural, 
+            ),
+            ..Note::default() 
+        };
+        let moves = Moves::try_from(4).unwrap();
+        note_right.move_with(moves);
+        assert_eq!(note_left, note_right);
+    }
+
+    #[test]
+    fn note_f_to_cs_not_scaled_test() {
+        let mut note_right = Note::<NotScaled> {
+            raw: RawNote::F,
+            decorators: vec!(
+                Decorators::Natural, 
+            ),
+            ..Note::default() 
+        };
+        let note_left = Note::<NotScaled> {
+            raw: RawNote::C,
+            decorators: vec!(
+                Decorators::Sharp, 
+            ),
+            ..Note::default() 
+        };
+        let moves = Moves::try_from(-4).unwrap();
+        note_right.move_with(moves);
+        assert_eq!(note_left, note_right);
+    }
+
+    #[test]
+    fn note_b_to_css_sharp_scaled_test() {
+        let note_left = Note::<Scaled> {
+            raw: RawNote::D,
+            decorators: vec!(
+                Decorators::Sharp,
+                Decorators::Sharp,
+            ),
+            ..Note::default()
+        };
+
+        let mut note_right = Note::<Scaled> {
+            raw: RawNote::B,
+            decorators: vec!(
+                Decorators::Natural,
+            ),
+            ..Note::default()
+        };
+        let moves = Moves::try_from(5).unwrap(); 
+        note_right.move_with(moves, 2);
+        assert_eq!(note_left, note_right);
+    }
+
+
+    #[test]
+    fn note_e_to_bbb_sharp_scaled_test() {
+        let note_left = Note::<Scaled> {
+            raw: RawNote::C,
+            decorators: vec!(
+                Decorators::Flat,
+                Decorators::Flat,
+            ),
+            ..Note::default()
+        };
+
+        let mut note_right = Note::<Scaled> {
+            raw: RawNote::E,
+            decorators: vec!(
+                Decorators::Natural,
+            ),
+            ..Note::default()
+        };
+        let moves = Moves::try_from(-6).unwrap(); 
+        note_right.move_with(moves, 2);
+        assert_eq!(note_left, note_right);
     }
 }

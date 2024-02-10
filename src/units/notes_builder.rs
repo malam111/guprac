@@ -1,5 +1,5 @@
 use std::{ops::{Deref, DerefMut}, marker::PhantomData};
-use crate::units::{Note, RawNote, Decorators, WithScale, NoScale, Octave};
+use crate::units::{Note, RawNote, Decorators, Scaled, NotScaled, Octave};
 
 pub struct NoteBuilder<State> {
     raw: RawNote,
@@ -32,16 +32,16 @@ impl<State> NoteBuilder<State> {
         self
     }
 
-    pub fn context(mut self) -> NoteBuilder<WithScale> {
+    pub fn context(mut self) -> NoteBuilder<Scaled> {
         NoteBuilder {
-            _state: PhantomData::<WithScale>,
+            _state: PhantomData::<Scaled>,
             ..self
         }
     }
 
-    pub fn nocontext(mut self) -> NoteBuilder<NoScale> {
+    pub fn nocontext(mut self) -> NoteBuilder<NotScaled> {
         NoteBuilder {
-            _state: PhantomData::<NoScale>,
+            _state: PhantomData::<NotScaled>,
             ..self
         }
     }
@@ -49,9 +49,9 @@ impl<State> NoteBuilder<State> {
 
 }
 
-impl NoteBuilder<WithScale> {
+impl NoteBuilder<Scaled> {
 
-    pub fn build(mut self) -> Note<WithScale> {
+    pub fn build(mut self) -> Note<Scaled> {
         if self.dec().len() == 0 {
             self.decorators.push(Decorators::Natural);
         }
@@ -59,9 +59,9 @@ impl NoteBuilder<WithScale> {
     }
 }
 
-impl NoteBuilder<NoScale> {
+impl NoteBuilder<NotScaled> {
 
-    pub fn build(mut self) -> Note<NoScale> {
+    pub fn build(mut self) -> Note<NotScaled> {
         if self.dec().len() == 0 {
             self.decorators.push(Decorators::Natural);
         }

@@ -40,7 +40,7 @@ impl Moves {
                                                     })
                                                     .filter(|x| x.is_ok())
                                                     .collect();
-        // TODO: Handle Err/Panic
+        // TODO: unwrap
         if moves.len() == val_len {
             return Ok(moves.into_iter()
                 .map(Result::unwrap)
