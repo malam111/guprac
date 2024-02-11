@@ -44,9 +44,9 @@ impl RawNote {
         });
     }
 
-    //pub fn distance(src: &Self, dst: &Self) -> Moves {
-    //    RawNote
-    //}
+    pub fn distance(src: &Self, dst: &Self) -> Moves {
+        todo!()
+    }
 }
 
 impl From<RawNote> for ScaleMap {

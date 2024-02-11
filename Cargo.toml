@@ -7,3 +7,5 @@ edition = "2018"
 [dependencies]
 educe = "*"
 rand = "*"
+serde_json = "*"
+serde = {version = "*", features = ["derive"]}
