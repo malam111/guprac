@@ -20,8 +20,8 @@ impl fmt::Display for Decorators {
 
         write!(f, "{}", match self {
             Self::Natural => "",
-            Self::Flat => "#",
-            Self::Sharp => "b",
+            Self::Flat => "b",
+            Self::Sharp => "#",
         })
     }
 }

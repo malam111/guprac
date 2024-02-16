@@ -38,7 +38,6 @@ impl<'a> Iterator for ScaleIter<'a> {
         Some(ret) 
     }
 
-    //TODO: impl this
     fn collect<B: FromIterator<Note<Scaled>>>(self) -> B {
         let mut vec = Vec::<Note<Scaled>>::new();
         let max = self.upper * 7;

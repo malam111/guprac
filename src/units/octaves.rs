@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(PartialEq, Debug, Copy, Clone, Educe)]
 #[educe(Default)]
 #[repr(i8)]
@@ -45,5 +47,11 @@ impl Octave {
 
     pub fn distance(src: Self, dst: Self) -> i8 {
         todo!();
+    }
+}
+
+impl fmt::Display for Octave {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", *self as i8)
     }
 }

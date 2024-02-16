@@ -75,6 +75,20 @@ impl From<RawNote> for ScaleMap {
     }
 }
 
+impl fmt::Display for RawNote {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", match self {
+            RawNote::A => "A",
+            RawNote::B => "B",
+            RawNote::C => "C",
+            RawNote::D => "D",
+            RawNote::E => "E",
+            RawNote::F => "F",
+            RawNote::G => "G"
+        })
+    }
+}
+
 #[derive(PartialEq, Debug, Clone)]
 pub struct Scaled;
 
@@ -118,6 +132,18 @@ impl<State> Note<State> {
         &self.decorators
     }
 
+}
+
+impl<T> fmt::Display for Note<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut display = String::new();
+        display.push_str(self.raw.to_string().as_ref());
+        for dec in self.decorators.iter() {
+            display.push_str(dec.to_string().as_ref());
+        }
+        display.push_str(self.octave.to_string().as_ref());
+        write!(f, "{}", display)
+    }
 }
 
 impl Note<Scaled> {
@@ -240,14 +266,6 @@ impl From<ScaleMap> for Note<NotScaled> {
     }
 }
 
-// simplifly Vec<Decorators>
-impl<T> fmt::Display for Note<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        todo!();
-        //write!(f, "{}{}{}", self.raw, self.decorators)
-    }
-}
-
 #[derive(Educe, Clone)]
 #[educe(Default)]
 pub struct NoteBuilder<State> {
@@ -344,6 +362,13 @@ impl NoteBuilder<NotScaled> {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn note_display_test() {
+        let left = "C#3";
+        let right = Note::<NotScaled>::new().raw(RawNote::C).decorator(Decorators::Sharp).octave(Octave::O3).build();
+        assert_eq!(left, format!("{}", right));
+    }
 
     #[test]
     fn note_to_scalemap_sharp_test() {
