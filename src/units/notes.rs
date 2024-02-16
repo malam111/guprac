@@ -131,12 +131,9 @@ impl Note<Scaled> {
             };
         }
 
-        // scale_map, src after applied decor
-        // dst, target note, the next note in the current scale context
         let mut scale_map = ScaleMap::from(&*self);
         let target_scale_map = Rc::new(RefCell::new(scale_map.clone()));
-        let target_octave = Rc::new(RefCell::new(self.octave.clone()));
-        // walk from scale_map to dst, check for octave change
+        let target_octave = Rc::new(RefCell::new(self.octave));
         let move_scale: Box<dyn Fn() -> Option<()>> = match moves.direction {
             Direction::Up => Box::new(|| 
                 (*target_scale_map.clone().borrow_mut()).next()

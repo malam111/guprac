@@ -1,5 +1,6 @@
 use std::ops::{Deref, DerefMut};
 use std::convert::{TryInto};
+use std::iter::FromIterator;
 
 use super::ScaleType;
 use crate::units::{Note, Scaled, Octave, Direction, RawNote, Decorators, Moves};
@@ -37,14 +38,16 @@ impl<'a> Iterator for ScaleIter<'a> {
         Some(ret) 
     }
 
-    //fn collect<B: FromIterator<A>>(self) -> B {
-    //    B::from_iter(self);
-    //    let max = self.upper * 7;
-    //    for idx, note in self {
-    //        if idx == max { break; } 
-    //           
-    //    }
-    //}
+    //TODO: impl this
+    fn collect<B: FromIterator<Note<Scaled>>>(self) -> B {
+        let mut vec = Vec::<Note<Scaled>>::new();
+        let max = self.upper * 7;
+        for (idx, note) in self.enumerate() {
+            if idx == max { break; } 
+            vec.push(note); 
+        }
+        B::from_iter(vec)
+    }
 }
 
 impl<'a> IntoIterator for &'a Scale {
@@ -116,8 +119,14 @@ impl ScaleBuilder {
 //    }
 //}
 
-struct ScaleChunk<'a> {
-    name: &'a str,
+#[derive(Debug)]
+struct ScaleChunk(Vec<Note<Scaled>>);
+
+impl FromIterator<Note<Scaled>> for ScaleChunk {
+
+    fn from_iter<T: IntoIterator<Item=Note<Scaled>>>(iter: T) -> Self {
+        Self (iter.into_iter().collect())
+    }
 }
 
 #[cfg(test)]
@@ -197,7 +206,7 @@ mod test {
             idx: 0,
             upper: 1
         };
-        let collected: Vec<Note<Scaled>> = (&scale).into_iter().collect();
+        let collected: ScaleChunk = (&scale).into_iter().collect();
         println!("{:?}", collected);
         assert_eq!(1, 1);
     }
