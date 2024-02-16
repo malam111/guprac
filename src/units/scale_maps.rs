@@ -105,13 +105,13 @@ impl ScaleMap {
                 Direction::Up => {  
                     match self.next() {
                         Some(ret) => { change = Some(ret); }
-                        _ => {} 
+                        None => {} 
                     }
                 },
                 Direction::Down => {
                     match self.prev() {
                         Some(ret) => { change = Some(ret); }
-                        _ => {} 
+                        None => {} 
                     }
                 }
             }

@@ -1,9 +1,13 @@
-use educe::Educe;
 use std::{ops::{Deref, DerefMut}, marker::PhantomData};
 use std::mem;
 use std::convert::{TryInto, TryFrom};
+use std::fmt;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use crate::{units::{Octave, Direction, Moves, Decorators, ScaleMap, Interval, Moveable}, /*scales::Scale*/};
+
+use educe::Educe;
 
 #[derive(PartialEq, Debug, Copy, Clone, Educe)]
 #[educe(Default)]
@@ -45,7 +49,15 @@ impl RawNote {
     }
 
     pub fn distance(src: &Self, dst: &Self) -> Moves {
-        todo!()
+        let diff: i8 = *src as i8 - *dst as i8;
+        Moves {
+            interval: diff.abs().try_into().unwrap(),
+            direction: if diff > 0 {
+                    Direction::Up 
+                } else {
+                    Direction::Down 
+                }
+        }
     }
 }
 
@@ -72,16 +84,17 @@ pub struct NotScaled;
 #[derive(PartialEq, Debug, Clone, Educe)]
 #[educe(Default)]
 pub struct Note<State> {
+    // FIXME: remove pub, add new()/builder
     raw: RawNote,
-    decorators: Vec<Decorators>,
     octave: Octave,
+    decorators: Vec<Decorators>,
     _state: PhantomData<State>,
 }
 
 impl<T> From<&Note<T>> for ScaleMap {
     fn from(value: &Note<T>) -> Self {
-        let mut temp: ScaleMap = value.raw().into();
-        for dec in value.dec().iter() {
+        let mut temp: ScaleMap = value.raw.into();
+        for dec in value.decorators.iter() {
             match *dec {
                 Decorators::Sharp => {temp.next();},
                 Decorators::Flat => {temp.prev();},
@@ -93,9 +106,9 @@ impl<T> From<&Note<T>> for ScaleMap {
 }
 
 impl<State> Note<State> {
-    //pub fn new(raw: RawNote) -> NoteBuilder<State> {
-        //NoteBuilder::new(raw)
-    //}
+    pub fn new() -> NoteBuilder<State> {
+        NoteBuilder::new()
+    }
 
     pub fn raw(&self) -> RawNote {
         self.raw
@@ -109,8 +122,7 @@ impl<State> Note<State> {
 
 impl Note<Scaled> {
     // FIXME: check times
-    fn move_with(&mut self, moves: Moves, times: u8) {
-        // TODO: adjust target with scale target
+    pub fn move_with(&mut self, moves: Moves, times: u8) {
         let mut target = self.raw.clone();
         for _ in 0..times {
             match moves.direction {
@@ -122,14 +134,48 @@ impl Note<Scaled> {
         // scale_map, src after applied decor
         // dst, target note, the next note in the current scale context
         let mut scale_map = ScaleMap::from(&*self);
-        scale_map.move_with(moves);
+        let target_scale_map = Rc::new(RefCell::new(scale_map.clone()));
+        let target_octave = Rc::new(RefCell::new(self.octave.clone()));
+        // walk from scale_map to dst, check for octave change
+        let move_scale: Box<dyn Fn() -> Option<()>> = match moves.direction {
+            Direction::Up => Box::new(|| 
+                (*target_scale_map.clone().borrow_mut()).next()
+            ),
+            Direction::Down => Box::new(|| 
+                (*target_scale_map.clone().borrow_mut()).prev()
+            )
+        };
+        let move_octave: Box<dyn Fn() -> ()> = match moves.direction {
+            Direction::Up => 
+                Box::new(|| 
+                    *target_octave
+                        .clone()
+                        .borrow_mut() = (target_octave.clone()).take().next()
+            ),
+            Direction::Down => 
+                Box::new(|| 
+                    *target_octave
+                        .clone()
+                        .borrow_mut() = (target_octave.clone()).take().prev()
+            )
+        };
         let dst = ScaleMap::from(target);
+        scale_map.move_with(moves);
+        loop {
+            if *target_scale_map.clone().borrow() == dst {
+                break;
+            }
+            if let Some(_) = (*move_scale)() {
+                (*move_octave)();
+            }
+        }
         let distance = ScaleMap::distance(&scale_map, &dst);
 
-        *self = Self::from_scale_map(scale_map, target, distance);
+        *self = Self::from_scale_map(scale_map, target, distance, target_octave.clone().take());
     }
 
-    fn from_scale_map(scale_map: ScaleMap, dst: RawNote, distance: Moves) -> Self {    
+    // todo.1. remove target_octave 
+    fn from_scale_map(scale_map: ScaleMap, dst: RawNote, distance: Moves, octave: Octave) -> Self {    
         let mut decorators = Vec::<Decorators>::new();
         let mut decor = if distance.direction == Direction::Up { 
             Decorators::Flat 
@@ -147,6 +193,7 @@ impl Note<Scaled> {
         Self {
             raw: dst,
             decorators,
+            octave,
             ..Default::default()
         }
     }
@@ -192,6 +239,106 @@ impl From<ScaleMap> for Note<NotScaled> {
             raw,
             decorators: vec![if sharp {Decorators::Sharp} else { Decorators::Natural }],
             ..Default::default()
+        }
+    }
+}
+
+// simplifly Vec<Decorators>
+impl<T> fmt::Display for Note<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        todo!();
+        //write!(f, "{}{}{}", self.raw, self.decorators)
+    }
+}
+
+#[derive(Educe, Clone)]
+#[educe(Default)]
+pub struct NoteBuilder<State> {
+    raw: RawNote,
+    decorators: Vec<Decorators>,
+    octave: Octave,
+    _state: PhantomData<State>,
+}
+
+impl<State> NoteBuilder<State> {
+    
+    fn new() -> Self {
+        NoteBuilder {
+            ..Default::default()
+        }
+    }
+
+    //fn from_string<S: AsRef<&str>>(text: S) -> Self {
+    //    todo!();
+    //}
+
+    pub fn raw(mut self, raw: RawNote) -> Self {
+        self.raw = raw; 
+        self
+    }
+
+    pub fn decorators(mut self, decorators: Vec<Decorators>) -> Self {
+        self.decorators.extend(decorators);
+        self
+    }
+
+    pub fn decorator(mut self, decorator: Decorators) -> Self {
+        self.decorators.push(decorator);
+        self
+    }
+
+    pub fn octave(mut self, octave: Octave) -> Self {
+        self.octave = octave;
+        self
+    }
+
+    pub fn scaled(mut self) -> NoteBuilder<Scaled> {
+        NoteBuilder {
+            _state: PhantomData::<Scaled>,
+            raw: self.raw,
+            decorators: self.decorators,
+            octave: self.octave,
+        }
+    }
+
+    pub fn noscaled(mut self) -> NoteBuilder<NotScaled> {
+        NoteBuilder {
+            _state: PhantomData::<NotScaled>,
+            raw: self.raw,
+            decorators: self.decorators,
+            octave: self.octave,
+        }
+    }
+
+
+}
+
+impl NoteBuilder<Scaled> {
+
+    pub fn build(&mut self) -> Note<Scaled> {
+        if self.decorators.len() == 0 {
+            self.decorators.push(Decorators::Natural);
+        }
+        Note {
+            raw: self.raw.clone(),
+            decorators: self.decorators.clone(),
+            octave: self.octave.clone(),
+            _state: self._state.clone()
+        }
+    }
+}
+
+impl NoteBuilder<NotScaled> {
+
+    pub fn build(&mut self) -> Note<NotScaled> {
+        if self.decorators.len() == 0 {
+            self.decorators.push(Decorators::Natural);
+        }
+        Note {
+            raw: self.raw.clone(),
+            decorators: self.decorators.clone(),
+            octave: self.octave.clone(),
+            _state: self._state.clone()
         }
     }
 }
@@ -281,6 +428,7 @@ mod test {
                 Decorators::Sharp,
                 Decorators::Sharp,
             ),
+            octave: Octave::O4,
             ..Note::default()
         };
 
@@ -318,5 +466,14 @@ mod test {
         let moves = Moves::try_from(-6).unwrap(); 
         note_right.move_with(moves, 2);
         assert_eq!(note_left, note_right);
+    }
+
+    #[test]
+    fn note_rawnote_distance() {
+        let moves = Moves {
+            interval: 2_i8.try_into().unwrap(),
+            direction: Direction::Down
+        };
+        assert_eq!(RawNote::distance(&RawNote::E, &RawNote::G), moves);
     }
 }

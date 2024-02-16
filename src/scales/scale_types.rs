@@ -2,6 +2,7 @@ use std::ops::{Deref, DerefMut};
 use std::fs::File;
 use std::path::Path;
 use std::error::Error;
+use std::marker::PhantomData;
 
 use crate::units::{Interval, Direction};
 //use super::{Scale};
@@ -9,68 +10,54 @@ use crate::units::Moves;
 
 use serde::{Deserialize, Serialize};
 
-pub struct ScaleTypes {
+struct ScaleTypeBuilderPopulated;
+struct ScaleTypeBuilderUnpopulated;
+
+pub struct ScaleTypeBuilder<State> {
+    scale_types: Vec<ScaleType>,
+    _state: PhantomData<State> 
 }
 
-impl ScaleType {
+impl<T> ScaleTypeBuilder<T> {
+    fn new() -> ScaleTypeBuilder<ScaleTypeBuilderUnpopulated> {
+        ScaleTypeBuilder {
+            scale_types: vec!(),
+            _state: PhantomData::<ScaleTypeBuilderUnpopulated>
+        }
+    }
+}
 
+impl ScaleTypeBuilder<ScaleTypeBuilderUnpopulated> {
+
+    fn path<P: AsRef<Path>>(self, path: P) -> Result<ScaleTypeBuilder<ScaleTypeBuilderPopulated>, Box<dyn Error>> {
+        let file = File::open(path)?;
+        Ok(ScaleTypeBuilder::<ScaleTypeBuilderPopulated> {
+            _state: PhantomData::<ScaleTypeBuilderPopulated>,
+            scale_types: serde_json::from_reader(file)?
+        })
+    }
+}
+
+impl ScaleTypeBuilder<ScaleTypeBuilderPopulated> {
+
+    fn path<P: AsRef<Path>>(&mut self, path: P) -> Result<&mut ScaleTypeBuilder<ScaleTypeBuilderPopulated>, Box<dyn Error>> {
+        let file = File::open(path)?;
+        self.scale_types.append(&mut serde_json::from_reader::<_, Vec<ScaleType>>(file)?);
+        Ok(self)
+    }
+
+    fn get(&self, scale_name: &str) -> Option<&ScaleType> {
+        self.scale_types.get(0)
+    }
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct ScaleType {
     name: String,
-    steps: Vec<u8>,
+    // FIXME: add getter
+    pub steps: Vec<u8>,
     degree: Vec<u8>
 }
-
-//#[derive(Educe)]
-//#[educe(Default)]
-//pub enum ScaleType {
-//    #[educe(Default)]
-//    Ionian,
-//    Dorian,
-//    Phrygian,
-//    Lydian,
-//    Mixolydian,
-//    Aeolian,
-//    Locrian,
-//
-//    HarmonicMinor,
-//    MelodicMinor,
-//
-//    PentatonicMajor,
-//    PentatonicMinor,
-//
-//    Blues,
-//    WholeTone,
-//    Chromatic,
-//}
-//
-//impl ScaleType {
-//    pub fn get_moves(&self, direction: Direction) -> ScaleMoves {
-//        ScaleMoves (
-//        match self {
-//            Self::Ionian => Moves::from_vec(vec![2, 2, 1, 2, 2, 2, 1]).unwrap(),
-//            _ => vec![]
-//        }
-//        )
-//    }
-//}
-//
-//pub struct ScaleMoves(Vec<Moves>);
-//
-//impl Deref for ScaleMoves {
-//    type Target = Vec<Moves>;
-//    fn deref(&self) -> &Self::Target {
-//        &self.0
-//    }
-//}
-//
-//impl DerefMut for ScaleMoves {
-//    fn deref_mut(&mut self) -> &mut Self::Target {
-//        &mut self.0
-//    }
-//}
 
 #[cfg(test)]
 mod test {
