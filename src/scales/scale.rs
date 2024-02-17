@@ -1,6 +1,7 @@
 use std::ops::{Deref, DerefMut};
 use std::convert::{TryInto};
 use std::iter::FromIterator;
+use std::fmt;
 
 use super::ScaleType;
 use crate::units::{Note, Scaled, Octave, Direction, RawNote, Decorators, Moves};
@@ -128,6 +129,18 @@ impl FromIterator<Note<Scaled>> for ScaleChunk {
     }
 }
 
+
+impl fmt::Display for ScaleChunk {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut ret = String::new();
+        for note in self.0.iter() {
+            ret.push_str(note.to_string().as_ref());
+            ret.push_str(",");
+        }
+        write!(f, "{}", ret)
+    }
+}
+
 #[cfg(test)]
 mod test {
 
@@ -174,6 +187,7 @@ mod test {
 
     #[test]
     fn scale_sharp_collect_test() {
+        let left = "Bb3,C4,D4,Eb4,F4,G4,A4,";
         let data = r#"
                 {
                     "name": "Ionian",
@@ -188,8 +202,8 @@ mod test {
         let scale_type: ScaleType = serde_json::from_str(data).unwrap();
 
         let note: Note<Scaled> = Note::<Scaled>::new()
-                        .raw(RawNote::A)
-                        .decorator(Decorators::Sharp)
+                        .raw(RawNote::B)
+                        .decorator(Decorators::Flat)
                         .scaled()
                         .build();
 
@@ -205,8 +219,8 @@ mod test {
             idx: 0,
             upper: 1
         };
+        // FIXME: buggy
         let collected: ScaleChunk = (&scale).into_iter().collect();
-        println!("{:?}", collected);
-        assert_eq!(1, 1);
+        assert_eq!(left, collected.to_string());
     }
 }
