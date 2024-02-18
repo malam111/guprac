@@ -24,24 +24,25 @@ pub struct ScaleIter<'a> {
 impl<'a> Iterator for ScaleIter<'a> {
     type Item = Note<Scaled>;
 
-    // FIXME: currently not working with decorators 
     fn next(&mut self) -> Option<Self::Item> {  
         let ret = self.note.clone();
         let moves = Moves { 
             interval: self.scale.scale_type.steps[self.idx].try_into().unwrap(), 
             direction: self.scale.direction
         };
+        let len = self.scale.scale_type.steps.len();
         self.note.move_with(
             moves,
             1
         );
-        self.idx = (self.idx + 1) % 7;
+        self.idx = (self.idx + 1) % len;
         Some(ret) 
     }
 
     fn collect<B: FromIterator<Note<Scaled>>>(self) -> B {
         let mut vec = Vec::<Note<Scaled>>::new();
-        let max = self.upper * 7;
+        let len = self.scale.scale_type.steps.len();
+        let max = self.upper * len;
         for (idx, note) in self.enumerate() {
             if idx == max { break; } 
             vec.push(note); 

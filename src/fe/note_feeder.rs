@@ -1,11 +1,12 @@
 use std::ops::{Deref, DerefMut};
 use std::convert::{TryInto};
+use std::default::Default;
 
-use crate::units::{Note, RawNote, NoScale, Moves, Octave, Decorators, Moveable};
+use crate::units::{NoteBuilder, Note, RawNote, NotScaled, Moves, Octave, Decorators, Moveable};
 
-#[derive(PartialEq, Debug, Default)]
+#[derive(PartialEq, Debug)]
 pub struct NoteFeeder {
-    note:  Note<NoScale>,
+    note:  Note<NotScaled>,
     moves: Option<Moves>,
     low_octave: Octave,
     high_octave: Octave,
@@ -16,23 +17,39 @@ impl NoteFeeder {
         NoteFeederBuilder::new() 
     }
 
-    fn bulk(&mut self, size: u8) -> Vec<Note<NoScale>> {
-        let mut vec: Vec<Note<NoScale>> = vec!();
+    fn note(&mut self) -> Note<NotScaled> {
+        self.note.clone()
+    }
+
+    fn bulk(&mut self, size: u8) -> Vec<Note<NotScaled>> {
+        let mut vec: Vec<Note<NotScaled>> = vec!();
         for idx in 0..size {
-            vec.push(self.next().unwrap());
+            vec.push(self.note.clone());
+            self.next();
         }
         vec
     }
 }
 
+impl Default for NoteFeeder {
+
+    fn default() -> Self {
+        NoteFeeder {
+            note: Note::default(),
+            moves: None,
+            low_octave: Octave::O3,
+            high_octave: Octave::O4
+        }
+    }
+}
+
 impl Iterator for NoteFeeder {
-    type Item = Note<NoScale>;
+    type Item = Note<NotScaled>;
     
     fn next(&mut self) -> Option<Self::Item> {
-        let ret = self.note.clone();
         let moves = Moves::rand();
         self.note.move_with(self.moves.or(Some(moves)).unwrap());
-        Some(ret)
+        Some(self.note.clone())
     }
 }
 
@@ -41,50 +58,29 @@ pub struct NoteFeederBuilder {
     inner: NoteFeeder,
 }
 
-impl Deref for NoteFeederBuilder {
-    type Target = NoteFeeder;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
-    }
-}
-
-impl DerefMut for NoteFeederBuilder {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.inner
-    }
-}
-
 impl NoteFeederBuilder {
-
     
     pub fn new() -> Self {
-        let mut builder = Self::default();
-        builder.note = Note::<NoScale>::new(RawNote::C).build();
-        builder.moves = None;
-        builder.low_octave = Octave::O2;
-        builder.high_octave = Octave::O4;
-
-        builder
+        NoteFeederBuilder::default()
     }
 
-    pub fn starter_note(mut self, starter: Note<NoScale>) -> Self {
-        self.note = starter;
+    pub fn starter_note(mut self, starter: Note<NotScaled>) -> Self {
+        self.inner.note = starter;
         self
     }
 
     pub fn moves(mut self, moves: Moves) -> Self {
-        self.moves = Some(moves);
+        self.inner.moves = Some(moves);
         self
     }
 
     pub fn low_octave(mut self, octave: Octave) -> Self {
-        self.low_octave = octave;
+        self.inner.low_octave = octave;
         self
     }
 
     pub fn high_octave(mut self, octave: Octave) -> Self {
-        self.high_octave = octave;
+        self.inner.high_octave = octave;
         self
     }
 
@@ -100,71 +96,62 @@ mod test {
 
     #[test]
     fn builder_test() {
-        let note_l = NoteFeeder {
-            note: Note::<NoScale>::new(RawNote::C).build(),
-            moves: Some(4_i8.try_into().unwrap()),
-            low_octave: Octave::O2,
-            high_octave: Octave::O4,
-        };
-        let note_r = NoteFeeder::new()
-                            .starter_note(note_l.note.clone())
-                            .moves(note_l.moves.clone().unwrap())
-                            .low_octave(Octave::O2)
+        let left = NoteFeeder::default();
+        let right = NoteFeeder::new()
+                            .starter_note(NoteBuilder::<NotScaled>::new().noscaled().build())
+                            .low_octave(Octave::O3)
                             .high_octave(Octave::O4)
                             .build();
-        assert_eq!(note_l, note_r);
+        assert_eq!(left, right);
     }
 
     #[test]
     fn iter_test() {
-        let mut note_l = Note::<NoScale>::new(RawNote::D).build();
-        let mut note_r = NoteFeeder::new()
-                            .starter_note(Note::<NoScale>::new(RawNote::C).build())
+
+        let mut builder = NoteBuilder::<NotScaled>::new().raw(RawNote::D).noscaled();
+        let mut left = builder.raw(RawNote::D).build();
+        let mut right = NoteFeeder::new()
+                            .starter_note(builder.raw(RawNote::C).build())
                             .moves(2_i8.try_into().unwrap())
-                            .low_octave(Octave::O2)
-                            .high_octave(Octave::O4)
                             .build();
 
-        note_r.next();
-        assert_eq!(Some(note_l.clone()), note_r.next());
-        note_l.move_with(2_i8.try_into().unwrap());
-        assert_eq!(Some(note_l.clone()), note_r.next());
+        right.next();
+        assert_eq!(left, right.note());
     }
 
     #[test]
     fn bulk_test() {
-        let note_a = Note::<NoScale>::new(RawNote::A).build();
-        let note_b = Note::<NoScale>::new(RawNote::B).build();
-        let note_cs = Note::<NoScale>::new(RawNote::C).decorators(vec![Decorators::Sharp]).build();
-        let note_ds = Note::<NoScale>::new(RawNote::D).decorator(Decorators::Sharp).build();
+        let mut builder = NoteBuilder::<NotScaled>::new().noscaled();
+        let note_a = builder.raw(RawNote::A).build();
+        let note_b = builder.raw(RawNote::B).build();
+        let note_cs = builder.raw(RawNote::C).decorator(Decorators::Sharp).build();
+        let note_ds = builder.raw(RawNote::D).decorator(Decorators::Sharp).build();
 
-        let notes_l = vec!(note_a, note_b, note_cs, note_ds);
+        let left = vec!(note_a, note_b, note_cs, note_ds);
 
-        let mut note_r = NoteFeeder::new()
-                            .starter_note(Note::<NoScale>::new(RawNote::A).build())
+        let mut right = NoteFeeder::new()
+                            .starter_note(builder.raw(RawNote::A).decorator(Decorators::Natural).build())
                             .moves(2_i8.try_into().unwrap())
-                            .low_octave(Octave::O2)
+                            .low_octave(Octave::O3)
                             .high_octave(Octave::O4)
                             .build()
-                            .bulk(4)
-                            .into_iter()
-                            .map(|mut note| { note.resolve(); note })
-                            .collect::<Vec<Note<NoScale>>>();
+                            .bulk(4);
         
-        assert_eq!(notes_l, note_r);
+        assert_eq!(left, right);
         
     }
 
     #[test]
     fn rand_test() {
+        let mut builder = NoteBuilder::<NotScaled>::new().noscaled();
         let mut feeder = NoteFeeder::new()
-                            .starter_note(Note::<NoScale>::new(RawNote::A).build())
-                            .low_octave(Octave::O2)
-                            .high_octave(Octave::O4)
-                            .build()
-                            .bulk(4);
+                            .starter_note(builder.build())
+                            .build();
+        for (idx, note) in feeder.enumerate() {
+            if idx == 10 { break; }
+            println!("{}", note);
+        }
 
-        println!("{:?}", feeder);
         assert!(true)
     }
 }

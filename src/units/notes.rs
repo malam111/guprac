@@ -95,8 +95,8 @@ pub struct Scaled;
 #[derive(PartialEq, Debug, Clone)]
 pub struct NotScaled;
 
-#[derive(PartialEq, Debug, Clone, Educe)]
-#[educe(Default)]
+#[derive(PartialEq, Debug, Clone)]
+//#[educe(Default)]
 pub struct Note<State> {
     // FIXME: remove pub, add new()/builder
     raw: RawNote,
@@ -116,6 +116,18 @@ impl<T> From<&Note<T>> for ScaleMap {
             }
         }
         temp
+    }
+}
+
+impl<T> Default for Note<T> {
+
+    fn default() -> Self {
+        Note {
+            raw: RawNote::default(),
+            octave: Octave::default(),
+            decorators: vec![Decorators::Natural],
+            _state: PhantomData::<T>,
+        }
     }
 }
 
@@ -228,8 +240,8 @@ impl Note<Scaled> {
 
 
 impl Note<NotScaled> {
-    fn move_with(&mut self, moves: Moves) {
-        // FIXME: Improve?
+    pub fn move_with(&mut self, moves: Moves) {
+        // FIXME: impl octave change
         let mut scale_map = ScaleMap::from(&*self);
         scale_map.move_with(moves);
         *self = scale_map.into();
@@ -277,7 +289,7 @@ pub struct NoteBuilder<State> {
 
 impl<State> NoteBuilder<State> {
     
-    fn new() -> Self {
+    pub fn new() -> Self {
         NoteBuilder {
             ..Default::default()
         }
@@ -287,40 +299,50 @@ impl<State> NoteBuilder<State> {
     //    todo!();
     //}
 
-    pub fn raw(mut self, raw: RawNote) -> Self {
+    pub fn raw(&mut self, raw: RawNote) -> &mut Self {
         self.raw = raw; 
         self
     }
 
-    pub fn decorators(mut self, decorators: Vec<Decorators>) -> Self {
+    pub fn decorators(&mut self, decorators: Vec<Decorators>) -> &mut Self {
+        self.decorators = decorators;
+        self
+    }
+
+    pub fn add_decorators(&mut self, decorators: Vec<Decorators>) -> &mut Self {
         self.decorators.extend(decorators);
         self
     }
 
-    pub fn decorator(mut self, decorator: Decorators) -> Self {
+    pub fn decorator(&mut self, decorator: Decorators) -> &mut Self {
+        self.decorators = vec!(decorator);
+        self
+    }
+
+    pub fn add_decorator(&mut self, decorator: Decorators) -> &mut Self {
         self.decorators.push(decorator);
         self
     }
 
-    pub fn octave(mut self, octave: Octave) -> Self {
+    pub fn octave(&mut self, octave: Octave) -> &mut Self {
         self.octave = octave;
         self
     }
 
-    pub fn scaled(mut self) -> NoteBuilder<Scaled> {
+    pub fn scaled(&mut self) -> NoteBuilder<Scaled> {
         NoteBuilder {
             _state: PhantomData::<Scaled>,
             raw: self.raw,
-            decorators: self.decorators,
+            decorators: self.decorators.to_owned(),
             octave: self.octave,
         }
     }
 
-    pub fn noscaled(mut self) -> NoteBuilder<NotScaled> {
+    pub fn noscaled(&mut self) -> NoteBuilder<NotScaled> {
         NoteBuilder {
             _state: PhantomData::<NotScaled>,
             raw: self.raw,
-            decorators: self.decorators,
+            decorators: self.decorators.to_owned(),
             octave: self.octave,
         }
     }
