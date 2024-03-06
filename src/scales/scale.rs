@@ -6,11 +6,45 @@ use std::fmt;
 use super::ScaleType;
 use crate::units::{Note, Scaled, Octave, Direction, RawNote, Decorators, Moves};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 pub struct Scale {
     key: Note<Scaled>,
     scale_type: ScaleType,
     direction: Direction,
+    bounded: bool,
+    low_octave: Octave,
+    high_octave: Octave,
+    degree: bool,
+}
+
+impl Scale {
+
+    pub fn new() -> ScaleBuilder {
+        ScaleBuilder::new()
+    }
+
+    fn to_degree(degree: usize, dec: Vec<Decorators>) -> Degree {
+        Degree {
+            degree,
+            dec
+        }
+    }
+}
+
+pub struct Degree {
+    degree: usize,
+    dec: Vec<Decorators>,
+}
+
+impl fmt::Display for Degree {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut ret = String::new();
+        for decor in self.dec.iter() {
+            ret.push_str(&(*decor.to_string()));
+            ret.push_str(",");
+        }
+        write!(f, "{}{}", self.degree, ret)
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -18,6 +52,7 @@ pub struct ScaleIter<'a> {
     scale: &'a Scale,
     note: Note<Scaled>,
     idx: usize,
+    oct_idx: usize,
     upper: usize,
 }
 
@@ -25,6 +60,11 @@ impl<'a> Iterator for ScaleIter<'a> {
     type Item = Note<Scaled>;
 
     fn next(&mut self) -> Option<Self::Item> {  
+        if self.oct_idx == self.upper {
+            self.note = self.scale.key.clone(); 
+            self.idx = 0;
+            self.oct_idx = 0;
+        }
         let ret = self.note.clone();
         let moves = Moves { 
             interval: self.scale.scale_type.steps[self.idx].try_into().unwrap(), 
@@ -36,15 +76,15 @@ impl<'a> Iterator for ScaleIter<'a> {
             1
         );
         self.idx = (self.idx + 1) % len;
+        self.oct_idx += 1;
         Some(ret) 
     }
 
     fn collect<B: FromIterator<Note<Scaled>>>(self) -> B {
         let mut vec = Vec::<Note<Scaled>>::new();
-        let len = self.scale.scale_type.steps.len();
-        let max = self.upper * len;
+        let upper = self.upper.clone();
         for (idx, note) in self.enumerate() {
-            if idx == max { break; } 
+            if idx == upper { break; } 
             vec.push(note); 
         }
         B::from_iter(vec)
@@ -57,33 +97,83 @@ impl<'a> IntoIterator for &'a Scale {
 
 
     fn into_iter(self) -> Self::IntoIter {
+        let len = self.scale_type.steps.len();
+        let upper = ((self.high_octave as i8 - self.low_octave as i8) as usize) * len + 1;
         ScaleIter {
             scale: self,
             note: self.key.clone(),
             idx: 0,
-            upper: 1
+            oct_idx: 0,
+            upper 
         }
     }
 }
 
-struct ScaleBuilder (Scale);
+pub struct ScaleBuilder (Scale);
 
 impl ScaleBuilder {
-    //fn new() -> ScaleBuilder {
-    //    ScaleBuilder(Scale{
-    //        ..Default::default()
-    //    })
-    //}
-
-    fn octave_from_to(&mut self, from: Octave, to: Octave) {
-        todo!() 
+    pub fn new() -> ScaleBuilder {
+        ScaleBuilder(Scale{
+            bounded: false,
+            high_octave: Octave::O4,
+            degree: true,
+            ..Default::default()
+        })
     }
 
+    pub fn low(mut self, low: Octave) -> Self {
+        self.0.low_octave = low;
+        self
+    }
+
+    pub fn high(mut self, high: Octave) -> Self {
+        self.0.high_octave = high;
+        self
+    }
+
+    pub fn bound(mut self, bound: bool) -> Self {
+        self.0.bounded = bound;
+        self
+    }
+
+    pub fn direction(mut self, dir: Direction) -> Self {
+        self.0.direction = dir;
+        self
+    }
+
+    pub fn key(mut self, key: Note<Scaled>) -> Self {
+        self.0.key = key; 
+        self
+    }
+
+    pub fn scale_type(mut self, stype: ScaleType) -> Self {
+        self.0.scale_type = stype;
+        self
+    }
+
+    pub fn degree(mut self, degree: bool) -> Self {
+        self.0.degree = degree;
+        self
+    }
+
+    pub fn build(mut self) -> Scale {
+        if self.0.high_octave < self.0.low_octave {
+            let temp = self.0.high_octave;  
+            self.0.high_octave = self.0.low_octave;
+            self.0.low_octave = temp;
+        }
+        if self.0.direction == Direction::Up {
+            self.0.key.octave = self.0.low_octave;
+        } else {
+            self.0.key.octave = self.0.high_octave;
+        }
+        self.0
+    }
 }
 //impl Deref for ScaleBuilder {
 //    type Target = Scale;    
 //
-//    fn deref(&self) -> &Self::Target {
+//    fn deref() -> &Self::Target {
 //        &self.0 
 //    }
 //}
@@ -121,12 +211,20 @@ impl ScaleBuilder {
 //}
 
 #[derive(Debug)]
-struct ScaleChunk(Vec<Note<Scaled>>);
+pub struct ScaleChunk(Vec<Note<Scaled>>);
 
 impl FromIterator<Note<Scaled>> for ScaleChunk {
 
     fn from_iter<T: IntoIterator<Item=Note<Scaled>>>(iter: T) -> Self {
         Self (iter.into_iter().collect())
+    }
+}
+
+impl Deref for ScaleChunk {
+    type Target = Vec<Note<Scaled>>;
+    
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
@@ -172,12 +270,17 @@ mod test {
             key: note,
             scale_type: scale_type,
             direction: Direction::Up,
+            bounded: false,
+            low_octave: Default::default(),
+            high_octave: Octave::O4,
+            degree: false,
         };
 
         let scale_iter = ScaleIter {
             scale: &scale,
             note: scale.key.clone(),
             idx: 0,
+            oct_idx: 0,
             upper: 1
         };
         for (idx, note) in (&scale).into_iter().enumerate() {
@@ -212,15 +315,19 @@ mod test {
             key: note,
             scale_type: scale_type,
             direction: Direction::Up,
+            bounded: false,
+            low_octave: Default::default(),
+            high_octave: Octave::O4,
+            degree: false,
         };
 
         let scale_iter = ScaleIter {
             scale: &scale,
             note: scale.key.clone(),
             idx: 0,
+            oct_idx: 0,
             upper: 1
         };
-        // FIXME: buggy
         let collected: ScaleChunk = (&scale).into_iter().collect();
         assert_eq!(left, collected.to_string());
     }

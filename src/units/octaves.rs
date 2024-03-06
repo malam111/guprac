@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(PartialEq, Debug, Copy, Clone, Educe)]
+#[derive(PartialOrd, PartialEq, Debug, Copy, Clone, Educe)]
 #[educe(Default)]
 #[repr(i8)]
 pub enum Octave {

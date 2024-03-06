@@ -1,15 +1,15 @@
 use std::ops::{Deref, DerefMut};
 use std::convert::{TryInto};
 
-use crate::units::{Note, RawNote, WithScale, Moves, Octave, Decorators, Moveable};
+use crate::units::{Note, RawNote, Scaled, Moves, Octave, Decorators, Moveable};
 use crate::scales::{Scale};
 
 #[derive(PartialEq, Debug, Default)]
 pub struct ScaleFeeder {
-    tonic: Note<WithScale>,
-    note:  Note<WithScale>,
+    key: Note<Scaled>,
+    note:  Note<Scaled>,
     moves: Option<Moves>,
-    scale: Option<Scale>,
+    scale: ScaleType,
     low_octave: Octave,
     high_octave: Octave,
 }

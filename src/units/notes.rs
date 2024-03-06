@@ -99,9 +99,9 @@ pub struct NotScaled;
 //#[educe(Default)]
 pub struct Note<State> {
     // FIXME: remove pub, add new()/builder
-    raw: RawNote,
-    octave: Octave,
-    decorators: Vec<Decorators>,
+    pub raw: RawNote,
+    pub octave: Octave,
+    pub decorators: Vec<Decorators>,
     _state: PhantomData<State>,
 }
 

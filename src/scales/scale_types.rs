@@ -59,6 +59,16 @@ pub struct ScaleType {
     degree: Vec<u8>
 }
 
+impl Default for ScaleType {
+    fn default() -> Self {
+        ScaleType {
+            name: "Ionian".to_string(),
+            steps: vec![2,2,1,2,2,2,1],
+            degree: vec![1,2,3,4,5,6,7],
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
 

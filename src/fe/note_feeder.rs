@@ -13,15 +13,15 @@ pub struct NoteFeeder {
 }
 
 impl NoteFeeder {
-    fn new() -> NoteFeederBuilder {
+    pub fn new() -> NoteFeederBuilder {
         NoteFeederBuilder::new() 
     }
 
-    fn note(&mut self) -> Note<NotScaled> {
+    pub fn note(&mut self) -> Note<NotScaled> {
         self.note.clone()
     }
 
-    fn bulk(&mut self, size: u8) -> Vec<Note<NotScaled>> {
+    pub fn bulk(&mut self, size: u8) -> Vec<Note<NotScaled>> {
         let mut vec: Vec<Note<NotScaled>> = vec!();
         for idx in 0..size {
             vec.push(self.note.clone());
