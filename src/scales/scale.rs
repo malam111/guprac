@@ -6,6 +6,22 @@ use std::fmt;
 use super::ScaleType;
 use crate::units::{Note, Scaled, Octave, Direction, RawNote, Decorators, Moves};
 
+#[derive(Debug)]
+pub enum ScaleItem {
+    Note(Note<Scaled>),
+    Degree(Degree),
+}
+
+impl fmt::Display for ScaleItem {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ScaleItem::Note(note) => { write!(f, "{}", note) }
+            ScaleItem::Degree(degree) => { write!(f, "{}", degree) }
+
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Default)]
 pub struct Scale {
     key: Note<Scaled>,
@@ -31,6 +47,7 @@ impl Scale {
     }
 }
 
+#[derive(Debug)]
 pub struct Degree {
     degree: usize,
     dec: Vec<Decorators>,
@@ -57,7 +74,7 @@ pub struct ScaleIter<'a> {
 }
 
 impl<'a> Iterator for ScaleIter<'a> {
-    type Item = Note<Scaled>;
+    type Item = ScaleItem;
 
     fn next(&mut self) -> Option<Self::Item> {  
         if self.oct_idx == self.upper {
@@ -77,11 +94,11 @@ impl<'a> Iterator for ScaleIter<'a> {
         );
         self.idx = (self.idx + 1) % len;
         self.oct_idx += 1;
-        Some(ret) 
+        Some(ScaleItem::Note(ret))
     }
 
-    fn collect<B: FromIterator<Note<Scaled>>>(self) -> B {
-        let mut vec = Vec::<Note<Scaled>>::new();
+    fn collect<B: FromIterator<Self::Item>>(self) -> B {
+        let mut vec = Vec::<Self::Item>::new();
         let upper = self.upper.clone();
         for (idx, note) in self.enumerate() {
             if idx == upper { break; } 
@@ -92,7 +109,7 @@ impl<'a> Iterator for ScaleIter<'a> {
 }
 
 impl<'a> IntoIterator for &'a Scale {
-    type Item = Note<Scaled>;
+    type Item = ScaleItem;
     type IntoIter = ScaleIter<'a>;
 
 
@@ -211,17 +228,17 @@ impl ScaleBuilder {
 //}
 
 #[derive(Debug)]
-pub struct ScaleChunk(Vec<Note<Scaled>>);
+pub struct ScaleChunk(Vec<ScaleItem>);
 
-impl FromIterator<Note<Scaled>> for ScaleChunk {
+impl FromIterator<ScaleItem> for ScaleChunk {
 
-    fn from_iter<T: IntoIterator<Item=Note<Scaled>>>(iter: T) -> Self {
+    fn from_iter<T: IntoIterator<Item=ScaleItem>>(iter: T) -> Self {
         Self (iter.into_iter().collect())
     }
 }
 
 impl Deref for ScaleChunk {
-    type Target = Vec<Note<Scaled>>;
+    type Target = Vec<ScaleItem>;
     
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -232,8 +249,15 @@ impl Deref for ScaleChunk {
 impl fmt::Display for ScaleChunk {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ret = String::new();
-        for note in self.0.iter() {
-            ret.push_str(note.to_string().as_ref());
+        for item in self.0.iter() {
+            match item {
+                ScaleItem::Note(note) => {
+                    ret.push_str(note.to_string().as_ref());
+                },
+                ScaleItem::Degree(degree) => {
+                    ret.push_str(degree.to_string().as_ref());
+                }
+            }
             ret.push_str(",");
         }
         write!(f, "{}", ret)
